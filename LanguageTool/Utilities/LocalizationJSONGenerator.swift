@@ -58,6 +58,8 @@ class LocalizationJSONGenerator {
         }
     }
     
+    /// 选择保存路径保存 json 文件
+    /// - Parameter data: 待保存的数据
     static func saveJSONToFile(data: Data?) {
         guard let data = data, let jsonString = String(data: data, encoding: .utf8) else {
             print("Invalid JSON data")
@@ -67,7 +69,12 @@ class LocalizationJSONGenerator {
         let savePanel = NSSavePanel()
         savePanel.canCreateDirectories = true // 允许用户创建文件夹
         savePanel.title = "Save JSON File" // 设置窗口标题
-        savePanel.nameFieldStringValue = "file.json" // 设置默认文件名
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let fileName = "\(dateFormatter.string(from: Date())).json"
+        
+        savePanel.nameFieldStringValue = fileName // 设置默认文件名
 
         // 显示保存面板
         savePanel.begin { (result) in
