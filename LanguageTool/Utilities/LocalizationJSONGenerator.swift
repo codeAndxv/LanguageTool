@@ -2,35 +2,41 @@ import Foundation
 import AppKit
 
 class LocalizationJSONGenerator {
-    static func generateJSON(for keys: [String], sourceLanguage: String = "en") -> Data? {
-        var localizationData: [String: Any] = [:]
-        localizationData["sourceLanguage"] = sourceLanguage
-        localizationData["strings"] = [:]
-
+    static func generateJSON(for keys: [String], languages: [String] = ["zh-Hans", "en", "zh-Hant", "ja", "ko", "es", "fr", "de"]) -> Data? {
+        var localizationData: [String: Any] = [
+            "version": "1.0",
+            "sourceLanguage": "zh-Hans",
+            "strings": [:]
+        ]
+        
+        var stringsDict: [String: Any] = [:]
+        
         for key in keys {
-            // 将 localizationData["strings"] 转换为 [String: Any] 类型
-            if var strings = localizationData["strings"] as? [String: Any] {
-                strings[key] = [
-                    "localizations": [
-                        sourceLanguage: [
-                            "stringUnit": [
-                                "state": "translated",
-                                "value": key
-                            ]
-                        ]
+            var localizations: [String: Any] = [:]
+            
+            // 为每种语言创建本地化结构
+            for language in languages {
+                let value = language == "zh-Hans" ? key : ""
+                localizations[language] = [
+                    "stringUnit": [
+                        "state": "translated",
+                        "value": value
                     ]
                 ]
-                localizationData["strings"] = strings // 更新 localizationData["strings"]
             }
+            
+            stringsDict[key] = [
+                "localizations": localizations
+            ]
         }
-
-        localizationData["version"] = "1.0"
-
+        
+        localizationData["strings"] = stringsDict
+        
         do {
-            let jsonData = try JSONSerialization.data(withJSONObject: localizationData, options: .prettyPrinted)
+            let jsonData = try JSONSerialization.data(withJSONObject: localizationData, options: [.prettyPrinted, .sortedKeys])
             return jsonData
         } catch {
-            print("Error generating JSON: \(error)")
+            print("❌ 生成 JSON 失败: \(error)")
             return nil
         }
     }
