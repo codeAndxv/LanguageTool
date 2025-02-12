@@ -49,10 +49,23 @@ struct ContentView: View {
     }
 
     private func addItem() {
-        // 示例用法
-        let jsonFile = "language.json" // 替换为你的 JSON 文件路径
-        let outputFile = "chinese_keys.txt" // 替换为你想要的输出文件名
-        JsonUtils.extractChineseKeys(from: jsonFile, to: outputFile)
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.json]
+        
+        panel.begin { response in
+            if response == .OK, let fileURL = panel.url {
+                let outputFile = "chinese_keys.txt"
+                JsonUtils.extractChineseKeys(from: fileURL.path, to: outputFile)
+            }
+        }
+        
+//        // 示例用法
+//        let jsonFile = "language.json" // 替换为你的 JSON 文件路径
+//        let outputFile = "chinese_keys.txt" // 替换为你想要的输出文件名
+//        JsonUtils.extractChineseKeys(from: jsonFile, to: outputFile)
         
 //        let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
 //        
