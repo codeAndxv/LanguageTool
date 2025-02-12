@@ -16,12 +16,11 @@ struct Message {
 struct DeepseekDemo: View {
     @State private var messages: [Message] = []
     @State private var inputText: String = ""
-    @State private var responseMessage: String = ""
     private let apiKey = "sk-8b26fcbf97a14d34875d3e983a3f41ea"  // 替换为你的 API key
     
     func sendMessage() {
         print("开始发送消息...")
-//        inputText = "帮我用 swift 写一个冒泡排序"
+        inputText = "帮我用 swift 写一个冒泡排序"
         // 添加用户消息到数组
         messages.append(Message(role: "system", content: inputText))
         
@@ -62,16 +61,8 @@ struct DeepseekDemo: View {
                     print("📥 收到响应数据: \(String(data: data, encoding: .utf8) ?? "")")
                     
                     do {
-                        if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                           let choices = jsonDict["choices"] as? [[String: Any]],
-                           let firstChoice = choices.first,
-                           let message = firstChoice["message"] as? [String: Any],
-                           let content = message["content"] as? String {
-                            DispatchQueue.main.async {
-                                self.responseMessage = content
-                                self.messages.append(Message(role: "assistant", content: content))
-                            }
-                        }
+                        let json = try JSONSerialization.jsonObject(with: data)
+                        print("✅ 解析后的 JSON: \(json)")
                     } catch {
                         print("❌ JSON 解析错误: \(error.localizedDescription)")
                     }
@@ -87,23 +78,6 @@ struct DeepseekDemo: View {
     
     var body: some View {
         VStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(messages.indices, id: \.self) { index in
-                        VStack(alignment: .leading) {
-                            Text(messages[index].role)
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                            Text(messages[index].content)
-                                .padding()
-                                .background(messages[index].role == "system" ? Color.blue.opacity(0.1) : Color.gray.opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-                .padding()
-            }
-            
             TextField("输入消息", text: $inputText)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()

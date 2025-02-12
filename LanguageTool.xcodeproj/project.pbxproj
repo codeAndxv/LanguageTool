@@ -10,9 +10,22 @@
 		89D94CC12D5CC564006DE9FB /* LanguageTool.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LanguageTool.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		89D94CE62D5CCDDA006DE9FB /* Exceptions for "LanguageTool" folder in "LanguageTool" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 89D94CC02D5CC564006DE9FB /* LanguageTool */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		89D94CC32D5CC564006DE9FB /* LanguageTool */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				89D94CE62D5CCDDA006DE9FB /* Exceptions for "LanguageTool" folder in "LanguageTool" target */,
+			);
 			path = LanguageTool;
 			sourceTree = "<group>";
 		};
@@ -257,6 +270,9 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LanguageTool/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = " App Transport Security Settings";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -285,6 +301,9 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = LanguageTool/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = " App Transport Security Settings";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
