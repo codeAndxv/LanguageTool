@@ -34,11 +34,20 @@ class LocalizationJSONGenerator {
         }
     }
 
-    static func saveJSONToFile(data: Data?, filePath: String) {
+    static func saveJSONToFile(data: Data?, fileName: String) { // 修改参数为文件名
         guard let data = data, let jsonString = String(data: data, encoding: .utf8) else {
             print("Invalid JSON data")
             return
         }
+
+        // 获取 Documents 目录的路径
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            print("Could not access Documents directory")
+            return
+        }
+
+        // 创建文件路径
+        let filePath = documentsDirectory.appendingPathComponent(fileName).path
 
         do {
             try jsonString.write(toFile: filePath, atomically: true, encoding: .utf8)

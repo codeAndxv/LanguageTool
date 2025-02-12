@@ -46,12 +46,14 @@ struct ContentView: View {
     }
 
     private func addItem() {
+        // 使用示例
         let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
-        let filePath = "/Users/huazi/Documents/file.json"
+        let fileName = "file.json" // 文件名
 
         if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
-            LocalizationJSONGenerator.saveJSONToFile(data: jsonData, filePath: filePath)
+            LocalizationJSONGenerator.saveJSONToFile(data: jsonData, fileName: fileName)
         }
+
         
         withAnimation {
             let newItem = Item(timestamp: Date())
