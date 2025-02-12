@@ -1,10 +1,3 @@
-//
-//  deepseekDemo.swift
-//  FeedingRecord
-//
-//  Created by 华子 on 2025/2/12.
-//
-
 import Foundation
 import SwiftUI
 
@@ -86,6 +79,13 @@ struct DeepseekDemo: View {
             Button("发送") {
                 sendMessage()
             }
+            
+            NavigationLink {
+                Transfer()
+            } label: {
+                Text("读取")
+            }
+
         }
     }
 }

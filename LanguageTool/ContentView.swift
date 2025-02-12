@@ -49,34 +49,21 @@ struct ContentView: View {
     }
 
     private func addItem() {
-        let panel = NSOpenPanel()
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        panel.canChooseFiles = true
-        panel.allowedContentTypes = [.json]
-        
-        panel.begin { response in
-            if response == .OK, let fileURL = panel.url {
-                let outputFile = "chinese_keys.txt"
-                JsonUtils.extractChineseKeys(from: fileURL.path, to: outputFile)
-            }
-        }
-        
 //        // 示例用法
 //        let jsonFile = "language.json" // 替换为你的 JSON 文件路径
 //        let outputFile = "chinese_keys.txt" // 替换为你想要的输出文件名
 //        JsonUtils.extractChineseKeys(from: jsonFile, to: outputFile)
         
-//        let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
-//        
-//        // 创建日期格式器
-//        let dateFormatter = DateFormatter()
-//        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-//        let fileName = "\(dateFormatter.string(from: Date())).json"
-//        
-//        if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
-//            LocalizationJSONGenerator.saveJSONToFile(data: jsonData, fileName: fileName)
-//        }
+        let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
+        
+        // 创建日期格式器
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let fileName = "\(dateFormatter.string(from: Date())).json"
+        
+        if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
+            LocalizationJSONGenerator.saveJSONToFile(data: jsonData, fileName: fileName)
+        }
         
         //选择保存目录的方式
 //        let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
