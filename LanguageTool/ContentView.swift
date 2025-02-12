@@ -27,8 +27,16 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: 200)
             .toolbar {
                 ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
+                    HStack {
+                        Button(action: addItem) {
+                            Label("Add Item", systemImage: "plus")
+                        }
+                        NavigationLink {
+                            DeepseekDemo()
+                        } label: {
+                            Text("add")
+                        }
+
                     }
                 }
             }
