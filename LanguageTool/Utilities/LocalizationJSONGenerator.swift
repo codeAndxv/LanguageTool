@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 class LocalizationJSONGenerator {
     static func generateJSON(for keys: [String], sourceLanguage: String = "en") -> Data? {
@@ -54,6 +55,35 @@ class LocalizationJSONGenerator {
             print("JSON file saved to \(filePath)")
         } catch {
             print("Error writing JSON to file: \(error)")
+        }
+    }
+    
+    static func saveJSONToFile(data: Data?) {
+        guard let data = data, let jsonString = String(data: data, encoding: .utf8) else {
+            print("Invalid JSON data")
+            return
+        }
+
+        let savePanel = NSSavePanel()
+        savePanel.canCreateDirectories = true // 允许用户创建文件夹
+        savePanel.title = "Save JSON File" // 设置窗口标题
+        savePanel.nameFieldStringValue = "file.json" // 设置默认文件名
+
+        // 显示保存面板
+        savePanel.begin { (result) in
+            if result == .OK {
+                guard let url = savePanel.url else {
+                    print("No URL selected")
+                    return
+                }
+
+                do {
+                    try jsonString.write(to: url, atomically: true, encoding: .utf8)
+                    print("JSON file saved to \(url)")
+                } catch {
+                    print("Error writing JSON to file: \(error)")
+                }
+            }
         }
     }
 }

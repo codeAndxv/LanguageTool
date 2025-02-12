@@ -59,6 +59,12 @@ struct ContentView: View {
         if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
             LocalizationJSONGenerator.saveJSONToFile(data: jsonData, fileName: fileName)
         }
+        //选择保存目录的方式
+//        let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
+//
+//        if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
+//            LocalizationJSONGenerator.saveJSONToFile(data: jsonData) // 调用新的保存方法
+//        }
         
         withAnimation {
             let newItem = Item(timestamp: Date())
