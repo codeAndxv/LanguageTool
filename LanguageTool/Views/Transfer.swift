@@ -85,6 +85,28 @@ struct Transfer: View {
         }
     }
     
+    private func convertToLocalization() {
+        guard let chineseKeys = JsonUtils.extractChineseKeysAsArray(from: inputPath) else {
+            conversionResult = "❌ 提取中文键失败"
+            showResult = true
+            return
+        }
+        
+        if let jsonData = LocalizationJSONGenerator.generateJSON(for: chineseKeys) {
+            do {
+                try jsonData.write(to: URL(fileURLWithPath: outputPath))
+                conversionResult = "✅ 成功生成本地化 JSON 文件，包含 \(chineseKeys.count) 个键"
+                showResult = true
+            } catch {
+                conversionResult = "❌ 写入文件失败: \(error.localizedDescription)"
+                showResult = true
+            }
+        } else {
+            conversionResult = "❌ 生成 JSON 失败"
+            showResult = true
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // 输入文件选择
@@ -107,12 +129,19 @@ struct Transfer: View {
                     .font(.system(.body, design: .monospaced))
             }
             
-            // 转换按钮
-            Button("开始转换") {
-                performConversion()
+            HStack(spacing: 20) {
+                Button("提取中文键") {
+                    performConversion()
+                }
+                .disabled(!isInputSelected || !isOutputSelected)
+                .buttonStyle(.borderedProminent)
+                
+                Button("生成本地化 JSON") {
+                    convertToLocalization()
+                }
+                .disabled(!isInputSelected || !isOutputSelected)
+                .buttonStyle(.borderedProminent)
             }
-            .disabled(!isInputSelected || !isOutputSelected)
-            .buttonStyle(.borderedProminent)
             
             // 显示转换结果
             if showResult {
