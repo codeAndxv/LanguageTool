@@ -20,7 +20,8 @@ struct DeepseekDemo: View {
     
     func sendMessage() {
         print("开始发送消息...")
-        inputText = "帮我用 swift 写一个冒泡排序"
+//        inputText = "帮我用 swift 写一个冒泡排序"
+        inputText = "翻译 你好"
         // 添加用户消息到数组
         messages.append(Message(role: "system", content: inputText))
         

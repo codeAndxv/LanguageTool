@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import AppKit
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
@@ -36,7 +37,9 @@ struct ContentView: View {
                         } label: {
                             Text("add")
                         }
-
+                        Button(action: openJSONFolder) {
+                            Label("Open JSON Folder", systemImage: "folder")
+                        }
                     }
                 }
             }
@@ -46,14 +49,16 @@ struct ContentView: View {
     }
 
     private func addItem() {
-        // 使用示例
         let keys = ["首页", "高级功能已解锁！", "设置", "关于我们"]
-        let fileName = "file.json" // 文件名
-
+        
+        // 创建日期格式器
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let fileName = "\(dateFormatter.string(from: Date())).json"
+        
         if let jsonData = LocalizationJSONGenerator.generateJSON(for: keys) {
             LocalizationJSONGenerator.saveJSONToFile(data: jsonData, fileName: fileName)
         }
-
         
         withAnimation {
             let newItem = Item(timestamp: Date())
@@ -66,6 +71,12 @@ struct ContentView: View {
             for index in offsets {
                 modelContext.delete(items[index])
             }
+        }
+    }
+
+    private func openJSONFolder() {
+        if let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: documentsPath.path)
         }
     }
 }
