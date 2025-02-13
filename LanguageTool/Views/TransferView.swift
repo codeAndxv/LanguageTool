@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import UniformTypeIdentifiers
 
 struct TransferView: View {
     @State private var inputPath: String = "未选择文件"
@@ -10,7 +11,7 @@ struct TransferView: View {
     @State private var showResult: Bool = false
     @State private var selectedLanguages: Set<Language> = [Language.supportedLanguages[0]] // 默认选中简体中文
     @State private var isLoading: Bool = false
-    @State private var showSuccessActions: Bool = false // 新增：控制成功后操作按钮的显示
+    @State private var showSuccessActions: Bool = false
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -21,7 +22,14 @@ struct TransferView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
-        panel.allowedContentTypes = [.json]
+        
+        // 支持 .json 和 .xcstrings 文件
+        let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
+        panel.allowedContentTypes = [.json, xcstringsType]
+        
+        // 设置文件类型描述
+        panel.title = "选择 JSON 或 Localizable.xcstrings 文件"
+        panel.message = "请选择需要处理的本地化文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -220,7 +228,7 @@ struct TransferView: View {
                 .padding()
                 .frame(maxWidth: 600)
             }
-            .frame(minHeight: 500) // 设置最小高度
+            .frame(minHeight: 500)
             .blur(radius: isLoading ? 3 : 0)
             
             // 加载指示器

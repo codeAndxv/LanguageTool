@@ -10,7 +10,6 @@ struct SettingsView: View {
             Section("API 设置") {
                 VStack(alignment: .leading, spacing: 8) {
                     ZStack(alignment: .leading) {
-                        // 编辑状态的视图
                         if isEditingAPIKey {
                             VStack(alignment: .leading, spacing: 8) {
                                 TextField("请输入 API Key", text: $temporaryAPIKey)
@@ -39,7 +38,6 @@ struct SettingsView: View {
                             .transition(.move(edge: .top).combined(with: .opacity))
                         }
                         
-                        // 显示状态的视图
                         if !isEditingAPIKey {
                             HStack(spacing: 12) {
                                 if settings.apiKey.isEmpty {
