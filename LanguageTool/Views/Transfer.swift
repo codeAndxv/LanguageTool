@@ -82,130 +82,133 @@ struct Transfer: View {
     
     var body: some View {
         ZStack {
-            // 主要内容
-            VStack(spacing: 20) {
-                // 文件选择部分
-                VStack(alignment: .leading, spacing: 10) {
-                    Button("选择读取文件") {
-                        selectInputFile()
+            ScrollView {
+                VStack(spacing: 20) {
+                    // 文件选择部分
+                    VStack(alignment: .leading, spacing: 10) {
+                        Button("选择读取文件") {
+                            selectInputFile()
+                        }
+                        Text(inputPath)
+                            .foregroundColor(.gray)
+                            .font(.system(.body, design: .monospaced))
+                            .lineLimit(1) // 添加行数限制
+                            .truncationMode(.middle) // 在中间显示省略号
                     }
-                    Text(inputPath)
-                        .foregroundColor(.gray)
-                        .font(.system(.body, design: .monospaced))
-                }
-                
-                VStack(alignment: .leading, spacing: 10) {
-                    Button("选择保存路径") {
-                        selectOutputPath()
-                    }
-                    Text(outputPath)
-                        .foregroundColor(.gray)
-                        .font(.system(.body, design: .monospaced))
-                }
-                
-                // 语言选择部分
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("选择目标语言")
-                        .font(.headline)
                     
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 10) {
-                            ForEach(Language.supportedLanguages) { language in
-                                LanguageToggle(language: language, isSelected: selectedLanguages.contains(language))
-                                    .onTapGesture {
-                                        if selectedLanguages.contains(language) {
-                                            if selectedLanguages.count > 1 { // 确保至少选中一种语言
-                                                selectedLanguages.remove(language)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Button("选择保存路径") {
+                            selectOutputPath()
+                        }
+                        Text(outputPath)
+                            .foregroundColor(.gray)
+                            .font(.system(.body, design: .monospaced))
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    
+                    // 语言选择部分
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("选择目标语言")
+                            .font(.headline)
+                        
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 10) {
+                                ForEach(Language.supportedLanguages) { language in
+                                    LanguageToggle(language: language, isSelected: selectedLanguages.contains(language))
+                                        .onTapGesture {
+                                            if selectedLanguages.contains(language) {
+                                                if selectedLanguages.count > 1 {
+                                                    selectedLanguages.remove(language)
+                                                }
+                                            } else {
+                                                selectedLanguages.insert(language)
                                             }
-                                        } else {
-                                            selectedLanguages.insert(language)
+                                        }
+                                }
+                            }
+                            .padding(.horizontal)
+                        }
+                        .frame(height: 200)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                    
+                    // 转换按钮
+                    Button("开始转换") {
+                        convertToLocalization()
+                    }
+                    .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
+                    .buttonStyle(.borderedProminent)
+                    
+                    // 结果显示区域
+                    if showResult {
+                        VStack(spacing: 12) {
+                            Text(conversionResult)
+                                .foregroundColor(conversionResult.hasPrefix("✅") ? .green : .red)
+                                .font(.system(.body, design: .rounded))
+                            
+                            if showSuccessActions {
+                                VStack(spacing: 8) {
+                                    Text("文件保存路径：")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text(outputPath)
+                                        .font(.system(.body, design: .monospaced))
+                                        .foregroundColor(.primary)
+                                        .padding(8)
+                                        .background(Color.gray.opacity(0.1))
+                                        .cornerRadius(6)
+                                    
+                                    Button(action: openInFinder) {
+                                        HStack {
+                                            Image(systemName: "folder")
+                                            Text("在 Finder 中显示")
                                         }
                                     }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .frame(height: 200)
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-                }
-                
-                // 转换按钮
-                Button("开始转换") {
-                    convertToLocalization()
-                }
-                .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
-                .buttonStyle(.borderedProminent)
-                
-                // 结果显示区域
-                if showResult {
-                    VStack(spacing: 12) {
-                        Text(conversionResult)
-                            .foregroundColor(conversionResult.hasPrefix("✅") ? .green : .red)
-                            .font(.system(.body, design: .rounded))
-                        
-                        // 成功后显示文件路径和操作按钮
-                        if showSuccessActions {
-                            VStack(spacing: 8) {
-                                Text("文件保存路径：")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                
-                                Text(outputPath)
-                                    .font(.system(.body, design: .monospaced))
-                                    .foregroundColor(.primary)
-                                    .padding(8)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(6)
-                                
-                                Button(action: openInFinder) {
-                                    HStack {
-                                        Image(systemName: "folder")
-                                        Text("在 Finder 中显示")
-                                    }
+                                    .buttonStyle(.borderless)
+                                    .padding(.top, 4)
                                 }
-                                .buttonStyle(.borderless)
-                                .padding(.top, 4)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.gray.opacity(0.05))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                                )
                             }
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.gray.opacity(0.05))
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-                            )
                         }
+                        .padding(.vertical)
                     }
-                    .padding(.vertical)
                 }
+                .padding()
+                .frame(maxWidth: 600)
             }
-            .padding()
-            .frame(maxWidth: 600)
-            .blur(radius: isLoading ? 3 : 0) // 在加载时模糊背景
-            .overlay {
-                if isLoading {
-                    // 加载指示器
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.5)
-                        Text("正在翻译中...")
-                            .font(.headline)
-                        Text("请耐心等待，这可能需要一些时间")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-                    .padding(30)
-                    .background {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(.background)
-                            .shadow(radius: 20)
-                    }
+            .frame(minHeight: 500) // 设置最小高度
+            .blur(radius: isLoading ? 3 : 0)
+            
+            // 加载指示器
+            if isLoading {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("正在翻译中...")
+                        .font(.headline)
+                    Text("请耐心等待，这可能需要一些时间")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                }
+                .padding(30)
+                .background {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.background)
+                        .shadow(radius: 20)
                 }
             }
         }
-        // 在加载时禁用所有交互
         .allowsHitTesting(!isLoading)
     }
 }
