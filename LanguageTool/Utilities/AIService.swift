@@ -7,17 +7,24 @@ struct Message: Codable {
 
 class AIService {
     static let shared = AIService()
-    private let apiKey = "sk-8b26fcbf97a14d34875d3e983a3f41ea"
+    
+    private var apiKey: String {
+        AppSettings.shared.apiKey
+    }
+    
     private let baseURL = "https://api.deepseek.com/v1/chat/completions"
 
-    enum AIError: Error, LocalizedError { // 遵循 LocalizedError 协议
+    enum AIError: Error {
         case invalidURL
         case networkError(Error)
         case invalidResponse
         case jsonError(Error)
-
-        var errorDescription: String? { // 实现 errorDescription
+        case invalidConfiguration(String)
+        
+        var localizedDescription: String {
             switch self {
+            case .invalidConfiguration(let message):
+                return "⚠️ 配置错误: \(message)"
             case .invalidURL:
                 return "❌ URL 创建失败"
             case .networkError(let error):
@@ -31,6 +38,12 @@ class AIService {
     }
     
     func sendMessage(messages: [Message], completion: @escaping (Result<String, AIError>) -> Void) {
+        // 检查 API Key
+        guard !apiKey.isEmpty else {
+            completion(.failure(.invalidConfiguration("未设置 API Key")))
+            return
+        }
+        
         guard let url = URL(string: baseURL) else {
             completion(.failure(.invalidURL))
             return

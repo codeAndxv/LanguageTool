@@ -26,7 +26,13 @@ struct LanguageToolApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .modelContainer(sharedModelContainer)
         }
-        .modelContainer(sharedModelContainer)
+        
+        // 添加设置窗口
+        Settings {
+            SettingsView()
+                .modelContainer(sharedModelContainer)
+        }
     }
 }
