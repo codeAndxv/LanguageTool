@@ -4,9 +4,7 @@ import SwiftData
 @main
 struct LanguageToolApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
+        let schema = Schema([])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
@@ -21,6 +19,8 @@ struct LanguageToolApp: App {
             ContentView()
                 .modelContainer(sharedModelContainer)
         }
+        .windowStyle(.hiddenTitleBar) // 隐藏默认标题栏
+        .defaultSize(width: 600, height: 600) // 设置默认窗口大小
         
         // 添加设置窗口
         Settings {

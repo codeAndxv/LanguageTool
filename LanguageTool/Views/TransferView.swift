@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-struct Transfer: View {
+struct TransferView: View {
     @State private var inputPath: String = "未选择文件"
     @State private var outputPath: String = "未选择保存位置"
     @State private var isInputSelected: Bool = false
@@ -102,57 +102,61 @@ struct Transfer: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // 文件选择部分
-                    VStack(alignment: .leading, spacing: 10) {
-                        Button("选择读取文件") {
-                            selectInputFile()
-                        }
-                        Text(inputPath)
-                            .foregroundColor(.gray)
-                            .font(.system(.body, design: .monospaced))
-                            .lineLimit(1) // 添加行数限制
-                            .truncationMode(.middle) // 在中间显示省略号
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 10) {
-                        Button("选择保存路径") {
-                            selectOutputPath()
-                        }
-                        Text(outputPath)
-                            .foregroundColor(.gray)
-                            .font(.system(.body, design: .monospaced))
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                    }
-                    
-                    // 语言选择部分
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("选择目标语言")
-                            .font(.headline)
-                        
-                        ScrollView {
-                            LazyVGrid(columns: columns, spacing: 10) {
-                                ForEach(Language.supportedLanguages) { language in
-                                    LanguageToggle(language: language, isSelected: selectedLanguages.contains(language))
-                                        .onTapGesture {
-                                            if selectedLanguages.contains(language) {
-                                                if selectedLanguages.count > 1 {
-                                                    selectedLanguages.remove(language)
-                                                }
-                                            } else {
-                                                selectedLanguages.insert(language)
-                                            }
-                                        }
-                                }
+                    // 左对齐的内容容器
+                    VStack(alignment: .leading, spacing: 20) {
+                        // 文件选择部分
+                        VStack(alignment: .leading, spacing: 10) {
+                            Button("选择读取文件") {
+                                selectInputFile()
                             }
-                            .padding(.horizontal)
+                            Text(inputPath)
+                                .foregroundColor(.gray)
+                                .font(.system(.body, design: .monospaced))
+                                .lineLimit(1)
+                                .truncationMode(.middle)
                         }
-                        .frame(height: 200)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
+                        
+                        VStack(alignment: .leading, spacing: 10) {
+                            Button("选择保存路径") {
+                                selectOutputPath()
+                            }
+                            Text(outputPath)
+                                .foregroundColor(.gray)
+                                .font(.system(.body, design: .monospaced))
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                        }
+                        
+                        // 语言选择部分
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("选择目标语言")
+                                .font(.headline)
+                            
+                            ScrollView {
+                                LazyVGrid(columns: columns, spacing: 10) {
+                                    ForEach(Language.supportedLanguages) { language in
+                                        LanguageToggle(language: language, isSelected: selectedLanguages.contains(language))
+                                            .onTapGesture {
+                                                if selectedLanguages.contains(language) {
+                                                    if selectedLanguages.count > 1 {
+                                                        selectedLanguages.remove(language)
+                                                    }
+                                                } else {
+                                                    selectedLanguages.insert(language)
+                                                }
+                                            }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                            .frame(height: 200)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     
-                    // 在转换按钮旁边添加重置按钮
+                    // 按钮部分保持原样（居中）
                     HStack(spacing: 12) {
                         Button("开始转换") {
                             convertToLocalization()
