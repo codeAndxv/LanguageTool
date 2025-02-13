@@ -13,8 +13,9 @@ struct SettingsView: View {
                         TextField("请输入 API Key", text: $temporaryAPIKey)
                             .textFieldStyle(.roundedBorder)
                             .font(.system(.body, design: .monospaced))
+                            .frame(width: 300)
                         
-                        HStack {
+                        HStack(spacing: 8) {
                             Button("保存") {
                                 settings.apiKey = temporaryAPIKey
                                 isEditingAPIKey = false
@@ -28,7 +29,7 @@ struct SettingsView: View {
                             .buttonStyle(.bordered)
                         }
                     } else {
-                        HStack {
+                        HStack(spacing: 12) {
                             if settings.apiKey.isEmpty {
                                 Text("未设置")
                                     .foregroundColor(.red)
@@ -36,8 +37,6 @@ struct SettingsView: View {
                                 Text(settings.apiKey.prefix(6) + "..." + settings.apiKey.suffix(6))
                                     .font(.system(.body, design: .monospaced))
                             }
-                            
-                            Spacer()
                             
                             Button("编辑") {
                                 temporaryAPIKey = settings.apiKey
@@ -53,13 +52,14 @@ struct SettingsView: View {
                 }
             }
             
-            // 预留未来其他设置的空间
             Section("其他设置") {
                 Text("更多设置项开发中...")
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .frame(minWidth: 400, minHeight: 300)
+        .formStyle(.grouped)
+        .padding(.horizontal, 20)
+        .frame(width: 400)
+        .frame(minHeight: 200)
     }
 } 
