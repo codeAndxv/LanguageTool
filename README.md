@@ -24,8 +24,9 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 使用方法
 
-1. 启动应用程序
+1. 启动应用程序![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/2pmTBE20250213230424.png)
 2. 在设置中配置 AI 服务的 API Key
+   ![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/66zhle20250213230536.png)
 3. 选择源文件（JSON 或 .xcstrings）
 4. 选择目标语言
 5. 选择保存位置
@@ -40,9 +41,30 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 安装
 
-1. 从 Releases 页面下载最新版本
-2. 将应用拖入 Applications 文件夹
-3. 首次运行时需要在系统偏好设置中允许运行
+由于这是一个开源项目，目前没有经过 Apple 公证，安装时需要一些额外步骤：
+
+1. 从 Releases 页面下载最新的 .zip 文件
+2. 解压缩文件
+3. 将 .app 文件拖入 Applications 文件夹
+4. 首次运行时：
+   - 右键点击应用图标
+   - 选择"打开"
+   - 在弹出的警告对话框中选择"打开"
+   
+
+注意：由于应用没有经过 Apple 签名，首次运行时系统会显示安全警告，这是正常的。如果你担心安全问题，可以查看源代码并自行编译。
+
+### 从源码构建
+
+如果你更倾向于自己构建应用：
+
+1. 克隆仓库：
+   ```bash
+   git clone https://github.com/aSynch1889/LanguageTool.git
+   ```
+2. 使用 Xcode 打开项目
+3. 选择 Product > Build
+4. 构建完成后，应用会出现在 Xcode 的产品文件夹中
 
 ## 开发环境
 
@@ -52,7 +74,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 注意事项
 
-- 使用前需要配置有效的 AI 服务 API Key
+- 使用前需要配置有效的 DeepSeek AI 服务 API Key
 - 建议在使用前备份原有的本地化文件
 - 翻译结果可能需要人工审核以确保准确性
 
@@ -76,4 +98,4 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by [华子]
