@@ -9,7 +9,7 @@ struct DeepseekDemo: View {
     
     func sendMessage() {
         isLoading = true
-        messages.append(Message(role: "system", content: inputText))
+        messages.append(Message(role: "user", content: inputText))
         
         AIService.shared.sendMessage(messages: messages) { result in
             DispatchQueue.main.async {
@@ -23,6 +23,22 @@ struct DeepseekDemo: View {
                 }
             }
         }
+        
+        // 使用示例
+//        let messages: [Message] = [
+//            Message(role: "system", content: "你是一个中英文翻译专家..."),
+//            Message(role: "user", content: "牛顿第一定律...")
+//        ]
+//
+//        AIService.shared.sendMessage(messages: messages) { result in
+//            switch result {
+//            case .success(let translation):
+//                print("翻译结果：\(translation)")
+//            case .failure(let error):
+//                print("错误：\(error.localizedDescription)") // 使用 localizedDescription
+//            }
+//        }
+        
     }
     
     var body: some View {
