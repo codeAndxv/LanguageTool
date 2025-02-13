@@ -10,6 +10,7 @@ struct Transfer: View {
     @State private var showResult: Bool = false
     @State private var selectedLanguages: Set<Language> = [Language.supportedLanguages[0]] // 默认选中简体中文
     @State private var isLoading: Bool = false
+    @State private var showSuccessActions: Bool = false // 新增：控制成功后操作按钮的显示
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -56,8 +57,9 @@ struct Transfer: View {
     
     private func convertToLocalization() {
         Task {
-            isLoading = true // 开始加载
-            showResult = false // 清除之前的结果
+            isLoading = true
+            showResult = false
+            showSuccessActions = false // 重置状态
             
             let result = await JsonUtils.convertToLocalizationFile(
                 from: inputPath,
@@ -66,11 +68,16 @@ struct Transfer: View {
             )
             
             DispatchQueue.main.async {
-                isLoading = false // 结束加载
+                isLoading = false
                 conversionResult = result.message
                 showResult = true
+                showSuccessActions = result.success // 只在成功时显示操作按钮
             }
         }
+    }
+    
+    private func openInFinder() {
+        NSWorkspace.shared.selectFile(outputPath, inFileViewerRootedAtPath: "")
     }
     
     var body: some View {
@@ -130,11 +137,48 @@ struct Transfer: View {
                 .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
                 .buttonStyle(.borderedProminent)
                 
+                // 结果显示区域
                 if showResult {
-                    Text(conversionResult)
-                        .foregroundColor(conversionResult.hasPrefix("✅") ? .green : .red)
-                        .font(.system(.body, design: .rounded))
-                        .padding(.vertical)
+                    VStack(spacing: 12) {
+                        Text(conversionResult)
+                            .foregroundColor(conversionResult.hasPrefix("✅") ? .green : .red)
+                            .font(.system(.body, design: .rounded))
+                        
+                        // 成功后显示文件路径和操作按钮
+                        if showSuccessActions {
+                            VStack(spacing: 8) {
+                                Text("文件保存路径：")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(outputPath)
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.primary)
+                                    .padding(8)
+                                    .background(Color.gray.opacity(0.1))
+                                    .cornerRadius(6)
+                                
+                                Button(action: openInFinder) {
+                                    HStack {
+                                        Image(systemName: "folder")
+                                        Text("在 Finder 中显示")
+                                    }
+                                }
+                                .buttonStyle(.borderless)
+                                .padding(.top, 4)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.gray.opacity(0.05))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.gray.opacity(0.1), lineWidth: 1)
+                            )
+                        }
+                    }
+                    .padding(.vertical)
                 }
             }
             .padding()
