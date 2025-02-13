@@ -80,6 +80,24 @@ struct Transfer: View {
         NSWorkspace.shared.selectFile(outputPath, inFileViewerRootedAtPath: "")
     }
     
+    private func resetAll() {
+        withAnimation(.smooth(duration: 0.3)) {
+            // 重置文件路径
+            inputPath = "未选择文件"
+            outputPath = "未选择保存位置"
+            isInputSelected = false
+            isOutputSelected = false
+            
+            // 重置语言选择（只保留简体中文）
+            selectedLanguages = [Language.supportedLanguages[0]]
+            
+            // 重置结果显示
+            showResult = false
+            conversionResult = ""
+            showSuccessActions = false
+        }
+    }
+    
     var body: some View {
         ZStack {
             ScrollView {
@@ -134,12 +152,23 @@ struct Transfer: View {
                         .cornerRadius(8)
                     }
                     
-                    // 转换按钮
-                    Button("开始转换") {
-                        convertToLocalization()
+                    // 在转换按钮旁边添加重置按钮
+                    HStack(spacing: 12) {
+                        Button("开始转换") {
+                            convertToLocalization()
+                        }
+                        .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
+                        .buttonStyle(.borderedProminent)
+                        
+                        Button(action: resetAll) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.counterclockwise")
+                                Text("重置")
+                            }
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(isLoading)
                     }
-                    .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
-                    .buttonStyle(.borderedProminent)
                     
                     // 结果显示区域
                     if showResult {
