@@ -83,12 +83,12 @@ class JsonUtils {
     }
 
     /// 从JSON文件中提取中文键并生成本地化文件
-    static func convertToLocalizationFile(from inputPath: String, to outputPath: String) -> (success: Bool, message: String) {
+    static func convertToLocalizationFile(from inputPath: String, to outputPath: String) async -> (success: Bool, message: String) {
         guard let chineseKeys = extractChineseKeysAsArray(from: inputPath) else {
             return (false, "❌ 提取中文键失败")
         }
         
-        guard let jsonData = LocalizationJSONGenerator.generateJSON(for: chineseKeys) else {
+        guard let jsonData = await LocalizationJSONGenerator.generateJSON(for: chineseKeys) else {
             return (false, "❌ 生成 JSON 失败")
         }
         

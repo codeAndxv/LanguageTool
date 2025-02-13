@@ -49,9 +49,13 @@ struct Transfer: View {
     }
     
     private func convertToLocalization() {
-        let result = JsonUtils.convertToLocalizationFile(from: inputPath, to: outputPath)
-        conversionResult = result.message
-        showResult = true
+        Task {
+            let result = await JsonUtils.convertToLocalizationFile(from: inputPath, to: outputPath)
+            DispatchQueue.main.async {
+                conversionResult = result.message
+                showResult = true
+            }
+        }
     }
     
     var body: some View {

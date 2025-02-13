@@ -106,4 +106,30 @@ class AIService {
         
         task.resume()
     }
+    
+    func translate(text: String, to language: String) async throws -> String {
+        let message = Message(role: "system", 
+                            content: "将以下文本翻译成\(language)语言，只需要返回翻译结果，不需要任何解释：\n\(text)")
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            sendMessage(messages: [message]) { result in
+                switch result {
+                case .success(let translation):
+                    continuation.resume(returning: translation.trimmingCharacters(in: .whitespacesAndNewlines))
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    // 批量翻译
+    func translateBatch(texts: [String], to language: String) async throws -> [String] {
+        var translations: [String] = []
+        for text in texts {
+            let translation = try await translate(text: text, to: language)
+            translations.append(translation)
+        }
+        return translations
+    }
 }

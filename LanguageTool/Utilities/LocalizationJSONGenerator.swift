@@ -2,7 +2,7 @@ import Foundation
 import AppKit
 
 class LocalizationJSONGenerator {
-    static func generateJSON(for keys: [String], languages: [String] = ["zh-Hans", "en", "zh-Hant", "ja", "ko", "es", "fr", "de"]) -> Data? {
+    static func generateJSON(for keys: [String], languages: [String] = ["zh-Hans", "en", "zh-Hant", "ja", "ko", "es", "fr", "de"]) async -> Data? {
         var localizationData: [String: Any] = [
             "version": "1.0",
             "sourceLanguage": "zh-Hans",
@@ -11,30 +11,91 @@ class LocalizationJSONGenerator {
         
         var stringsDict: [String: Any] = [:]
         
-        for key in keys {
-            var localizations: [String: Any] = [:]
-            
-            // 为每种语言创建本地化结构
-            for language in languages {
-                let value = language == "zh-Hans" ? key : ""
-                localizations[language] = [
-                    "stringUnit": [
-                        "state": "translated",
-                        "value": value
-                    ]
-                ]
+        // 语言名称映射
+        let languageNames = [
+            "en": "英语",
+            "zh-Hant": "繁体中文",
+            "ja": "日语",
+            "ko": "韩语",
+            "es": "西班牙语",
+            "fr": "法语",
+            "de": "德语"
+        ]
+        
+        // 为每种语言批量翻译所有键
+        for language in languages {
+            if language == "zh-Hans" {
+                // 源语言不需要翻译
+                for key in keys {
+                    if stringsDict[key] == nil {
+                        stringsDict[key] = ["localizations": [:]]
+                    }
+                    if var localizations = stringsDict[key] as? [String: Any],
+                       var localizationsDict = localizations["localizations"] as? [String: Any] {
+                        localizationsDict[language] = [
+                            "stringUnit": [
+                                "state": "translated",
+                                "value": key
+                            ]
+                        ]
+                        localizations["localizations"] = localizationsDict
+                        stringsDict[key] = localizations
+                    }
+                }
+            } else {
+                do {
+                    // 批量翻译
+                    let translations = try await AIService.shared.translateBatch(
+                        texts: keys,
+                        to: languageNames[language] ?? language
+                    )
+                    
+                    // 将翻译结果添加到字典中
+                    for (index, key) in keys.enumerated() {
+                        if stringsDict[key] == nil {
+                            stringsDict[key] = ["localizations": [:]]
+                        }
+                        if var localizations = stringsDict[key] as? [String: Any],
+                           var localizationsDict = localizations["localizations"] as? [String: Any] {
+                            localizationsDict[language] = [
+                                "stringUnit": [
+                                    "state": "translated",
+                                    "value": translations[index]
+                                ]
+                            ]
+                            localizations["localizations"] = localizationsDict
+                            stringsDict[key] = localizations
+                        }
+                    }
+                    
+                    print("✅ 批量翻译成功 [\(language)]: \(keys.count) 个词条")
+                } catch {
+                    print("❌ 批量翻译失败 [\(language)]: \(error.localizedDescription)")
+                    // 翻译失败时为所有键设置空值
+                    for key in keys {
+                        if stringsDict[key] == nil {
+                            stringsDict[key] = ["localizations": [:]]
+                        }
+                        if var localizations = stringsDict[key] as? [String: Any],
+                           var localizationsDict = localizations["localizations"] as? [String: Any] {
+                            localizationsDict[language] = [
+                                "stringUnit": [
+                                    "state": "needs_review",
+                                    "value": ""
+                                ]
+                            ]
+                            localizations["localizations"] = localizationsDict
+                            stringsDict[key] = localizations
+                        }
+                    }
+                }
             }
-            
-            stringsDict[key] = [
-                "localizations": localizations
-            ]
         }
         
         localizationData["strings"] = stringsDict
         
         do {
-            let jsonData = try JSONSerialization.data(withJSONObject: localizationData, options: [.prettyPrinted, .sortedKeys])
-            return jsonData
+            return try JSONSerialization.data(withJSONObject: localizationData, options: [.prettyPrinted, .sortedKeys])
         } catch {
             print("❌ 生成 JSON 失败: \(error)")
             return nil
