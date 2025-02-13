@@ -31,7 +31,7 @@ struct Transfer: View {
         // 设置默认文件名（使用当前时间）
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-        let defaultFileName = "chinese_keys_\(dateFormatter.string(from: Date())).txt"
+        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date())).xcstrings" //Localizable.xcstrings
         panel.nameFieldStringValue = defaultFileName
         
         panel.begin { response in
@@ -43,68 +43,15 @@ struct Transfer: View {
     }
     
     private func performConversion() {
-        do {
-            guard let jsonData = try? Data(contentsOf: URL(fileURLWithPath: inputPath)) else {
-                conversionResult = "错误：文件未找到"
-                showResult = true
-                return
-            }
-
-            guard let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []) else {
-                conversionResult = "错误：不是有效的 JSON 格式"
-                showResult = true
-                return
-            }
-
-            var chineseKeys = Set<String>()
-
-            func extractKeys(from object: Any) {
-                if let dictionary = object as? [String: Any] {
-                    for (key, value) in dictionary {
-                        if key.range(of: "\\p{Han}", options: .regularExpression) != nil {
-                            chineseKeys.insert(key)
-                        }
-                        extractKeys(from: value)
-                    }
-                } else if let array = object as? [Any] {
-                    for item in array {
-                        extractKeys(from: item)
-                    }
-                }
-            }
-
-            extractKeys(from: jsonObject)
-            let keysArray = Array(chineseKeys)
-
-            try keysArray.joined(separator: "\n").write(toFile: outputPath, atomically: true, encoding: .utf8)
-            conversionResult = "✅ 成功提取 \(chineseKeys.count) 个中文键并写入文件"
-            showResult = true
-        } catch {
-            conversionResult = "❌ 转换失败：\(error.localizedDescription)"
-            showResult = true
-        }
+        let result = JsonUtils.extractChineseKeysToFile(from: inputPath, to: outputPath)
+        conversionResult = result.message
+        showResult = true
     }
     
     private func convertToLocalization() {
-        guard let chineseKeys = JsonUtils.extractChineseKeysAsArray(from: inputPath) else {
-            conversionResult = "❌ 提取中文键失败"
-            showResult = true
-            return
-        }
-        
-        if let jsonData = LocalizationJSONGenerator.generateJSON(for: chineseKeys) {
-            do {
-                try jsonData.write(to: URL(fileURLWithPath: outputPath))
-                conversionResult = "✅ 成功生成本地化 JSON 文件，包含 \(chineseKeys.count) 个键"
-                showResult = true
-            } catch {
-                conversionResult = "❌ 写入文件失败: \(error.localizedDescription)"
-                showResult = true
-            }
-        } else {
-            conversionResult = "❌ 生成 JSON 失败"
-            showResult = true
-        }
+        let result = JsonUtils.convertToLocalizationFile(from: inputPath, to: outputPath)
+        conversionResult = result.message
+        showResult = true
     }
     
     var body: some View {
