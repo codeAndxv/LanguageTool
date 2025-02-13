@@ -50,12 +50,6 @@ struct DeepseekDemo: View {
             Button("发送") {
                 sendMessage()
             }
-            
-            NavigationLink {
-                Transfer()
-            } label: {
-                Text("读取")
-            }
 
             if isLoading {
                 ProgressView()

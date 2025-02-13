@@ -1,10 +1,3 @@
-//
-//  LanguageToolApp.swift
-//  LanguageTool
-//
-//  Created by 华子 on 2025/2/12.
-//
-
 import SwiftUI
 import SwiftData
 
