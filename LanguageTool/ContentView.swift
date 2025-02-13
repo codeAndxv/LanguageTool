@@ -37,8 +37,13 @@ struct ContentView: View {
                         } label: {
                             Text("add")
                         }
-                        Button(action: openJSONFolder) {
-                            Label("Open JSON Folder", systemImage: "folder")
+//                        Button(action: openJSONFolder) {
+//                            Label("Open JSON Folder", systemImage: "folder")
+//                        }
+                        NavigationLink {
+                            Transfer()
+                        } label: {
+                            Text("转换")
                         }
                     }
                 }
