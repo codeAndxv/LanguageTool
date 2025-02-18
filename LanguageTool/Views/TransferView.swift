@@ -65,15 +65,25 @@ struct TransferView: View {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
         
-        // 根据选择的输出格式设置默认文件名
-        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date()))\(outputFormat == .xcstrings ? ".xcstrings" : ".strings")"
+        // 根据选择的输出格式设置默认文件名和扩展名
+        let timestamp = dateFormatter.string(from: Date())
+        let fileExtension = outputFormat == .xcstrings ? "xcstrings" : "strings"
+        let defaultFileName = "Localizable_\(timestamp).\(fileExtension)"
         panel.nameFieldStringValue = defaultFileName
+        
+        // 允许创建目录
+        panel.canCreateDirectories = true
         
         // 设置面板标题和提示
         panel.title = "保存本地化文件"
         panel.message = outputFormat == .xcstrings ? 
             "选择保存 .xcstrings 文件的位置" : 
             "选择保存 .strings 文件的位置（将在选择位置创建语言子目录）"
+        
+        // 设置初始目录为桌面
+        if let desktopURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first {
+            panel.directoryURL = desktopURL
+        }
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -95,17 +105,129 @@ struct TransferView: View {
             showResult = false
             showSuccessActions = false // 重置状态
             
-            let result = await JsonUtils.convertToLocalizationFile(
-                from: inputPath,
-                to: outputPath,
-                languages: Array(selectedLanguages).map { $0.code }
-            )
+            // 检查文件扩展名
+            let fileExtension = (inputPath as NSString).pathExtension.lowercased()
+            
+            do {
+                switch fileExtension {
+                case "strings":
+                    // 处理 .strings 文件
+                    let parseResult = StringsFileParser.parseStringsFile(at: inputPath)
+                    switch parseResult {
+                    case .success(let translations):
+                        if outputFormat == .xcstrings {
+                            // 转换为 .xcstrings
+                            let result = await StringsFileParser.convertToXCStrings(
+                                translations: translations,
+                                languages: Array(selectedLanguages).map { $0.code }
+                            )
+                            
+                            switch result {
+                            case .success(let jsonData):
+                                try jsonData.write(to: URL(fileURLWithPath: outputPath))
+                                DispatchQueue.main.async {
+                                    conversionResult = "✅ 转换成功！"
+                                    showSuccessActions = true
+                                }
+                            case .failure(let error):
+                                DispatchQueue.main.async {
+                                    conversionResult = "❌ 转换失败：\(error.localizedDescription)"
+                                }
+                            }
+                        } else {
+                            print("开始生成 .strings 文件...")
+                            // 生成多语言 .strings 文件
+                            let baseDir = (outputPath as NSString).deletingLastPathComponent
+                            print("基础目录: \(baseDir)")
+                            
+                            for language in selectedLanguages {
+                                print("处理语言: \(language.code)")
+                                let langDir = (baseDir as NSString).appendingPathComponent("\(language.code).lproj")
+                                let stringsPath = (langDir as NSString).appendingPathComponent("Localizable.strings")
+                                
+                                print("创建目录: \(langDir)")
+                                do {
+                                    // 创建语言目录
+                                    try FileManager.default.createDirectory(
+                                        atPath: langDir,
+                                        withIntermediateDirectories: true,
+                                        attributes: nil
+                                    )
+                                    
+                                    if language.code == "zh-Hans" {
+                                        print("处理源语言文件...")
+                                        // 源语言直接使用原始值
+                                        let result = StringsFileParser.generateStringsFile(
+                                            translations: translations,
+                                            to: stringsPath
+                                        )
+                                        if case .failure(let error) = result {
+                                            throw error
+                                        }
+                                    } else {
+                                        print("开始翻译: \(language.code)")
+                                        // 其他语言需要翻译
+                                        var translatedDict: [String: String] = [:]
+                                        for (key, value) in translations {
+                                            print("翻译: \(key)")
+                                            let translation = try await AIService.shared.translate(
+                                                text: value,
+                                                to: language.code
+                                            )
+                                            translatedDict[key] = translation
+                                        }
+                                        
+                                        print("生成翻译文件: \(language.code)")
+                                        let result = StringsFileParser.generateStringsFile(
+                                            translations: translatedDict,
+                                            to: stringsPath
+                                        )
+                                        if case .failure(let error) = result {
+                                            throw error
+                                        }
+                                    }
+                                } catch {
+                                    print("处理语言 \(language.code) 时出错: \(error.localizedDescription)")
+                                    throw error
+                                }
+                            }
+                            
+                            print("所有文件生成完成")
+                            DispatchQueue.main.async {
+                                self.conversionResult = "✅ 转换成功！"
+                                self.showSuccessActions = true
+                            }
+                        }
+                    case .failure(let error):
+                        print("解析失败: \(error.localizedDescription)")
+                        DispatchQueue.main.async {
+                            self.conversionResult = "❌ 解析失败：\(error.localizedDescription)"
+                        }
+                    }
+                    
+                default:
+                    // 处理 JSON 和 xcstrings 文件
+                    let result = await JsonUtils.convertToLocalizationFile(
+                        from: inputPath,
+                        to: outputPath,
+                        languages: Array(selectedLanguages).map { $0.code }
+                    )
+                    
+                    DispatchQueue.main.async {
+                        conversionResult = result.message
+                        showSuccessActions = result.success
+                    }
+                }
+            } catch {
+                print("转换过程出错: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.conversionResult = "❌ 转换失败：\(error.localizedDescription)"
+                }
+            }
             
             DispatchQueue.main.async {
-                isLoading = false
-                conversionResult = result.message
-                showResult = true
-                showSuccessActions = result.success // 只在成功时显示操作按钮
+                self.isLoading = false
+                self.showResult = true
             }
         }
     }
@@ -181,7 +303,6 @@ struct TransferView: View {
                                             }
                                     }
                                 }
-                                .padding(.horizontal)
                             }
                             .frame(height: 200)
                             .background(Color.gray.opacity(0.1))
