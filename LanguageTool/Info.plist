@@ -2,8 +2,22 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSFileProviderUsageDescription</key>
+	<string>需要访问选择的文件夹来保存本地文件</string>
 	<key>NSDocumentsFolderUsageDescription</key>
-	<string>LanguageTool 需要访问文稿以便创建文件夹供程序使用</string>
+	<string>需要访问文档文件夹来保存本地化文件</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>需要访问下载文件夹来保存本地化文件</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>需要访问桌面文件夹来保存本地化文件</string>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>需要访问系统权限来保存本地化文件</string>
+	<key>com.apple.security.files.downloads.read-write</key>
+	<true/>
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
