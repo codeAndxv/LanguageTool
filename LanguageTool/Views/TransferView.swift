@@ -80,29 +80,12 @@ struct TransferView: View {
             
             openPanel.begin { [self] response in
                 if response == .OK, let directoryURL = openPanel.url {
-                    // 测试目录写入权限
-                    let testPath = directoryURL.appendingPathComponent(".test_write_permission")
-                    do {
-                        try "test".write(to: testPath, atomically: true, encoding: .utf8)
-                        try FileManager.default.removeItem(at: testPath)
-                        
-                        // 如果测试成功，设置输出路径
-                        self.outputPath = directoryURL.path
-                        self.isOutputSelected = true
-                    } catch {
-                        DispatchQueue.main.async {
-                            let alert = NSAlert()
-                            alert.messageText = "权限错误"
-                            alert.informativeText = "无法获得目录的写入权限，请选择其他位置或检查系统权限设置。"
-                            alert.alertStyle = .warning
-                            alert.addButton(withTitle: "确定")
-                            alert.runModal()
-                        }
-                    }
+                    self.outputPath = directoryURL.path
+                    self.isOutputSelected = true
                 }
             }
         } else {
-            // .xcstrings 文件的保存逻辑保持不变
+            // .xcstrings 文件的保存逻辑
             let panel = NSSavePanel()
             if let xcstringsType = UTType(filenameExtension: "xcstrings") {
                 panel.allowedContentTypes = [xcstringsType]
@@ -348,24 +331,23 @@ struct TransferView: View {
                         }
                         
                         // 输出格式选择部分
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("输出格式")
-                                .font(.headline)
-                            
-                            Picker("输出格式", selection: $outputFormat) {
-                                Text("Xcode Strings Catalog (.xcstrings)")
-                                    .tag(LocalizationFormat.xcstrings)
-                                Text("Strings File (.strings)")
-                                    .tag(LocalizationFormat.strings)
-                            }
-                            .pickerStyle(.radioGroup)
-                            .onChange(of: outputFormat) { oldValue, newValue in
-                                // 只有在已经选择了保存路径的情况下才更新扩展名
-                                if outputPath != "未选择保存位置" {
-                                    updateOutputPathExtension(to: newValue)
-                                }
-                            }
-                        }
+//                        VStack(alignment: .leading, spacing: 10) {
+//                            Text("输出格式")
+//                                .font(.headline)
+//                            
+//                            Picker("输出格式", selection: $outputFormat) {
+//                                Text("Xcode Strings Catalog (.xcstrings)")
+//                                    .tag(LocalizationFormat.xcstrings)
+//                                Text("Strings File (.strings)")
+//                                    .tag(LocalizationFormat.strings)
+//                            }
+//                            .pickerStyle(.radioGroup)
+//                            .onChange(of: outputFormat) { oldValue, newValue in
+//                                // 每次切换格式时都重置输出路径
+//                                outputPath = "未选择保存位置"
+//                                isOutputSelected = false
+//                            }
+//                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     
