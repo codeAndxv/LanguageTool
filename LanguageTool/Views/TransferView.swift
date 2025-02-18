@@ -55,27 +55,42 @@ struct TransferView: View {
     
     private func selectOutputPath() {
         let panel = NSSavePanel()
-        let xcstringsType = UTType("com.apple.xcode.strings-text")!
-        let stringsType = UTType.propertyList
         
-        // 根据选择的输出格式设置允许的文件类型
-        panel.allowedContentTypes = [outputFormat == .xcstrings ? xcstringsType : stringsType]
+        // 使用 allowedContentTypes 替代 allowedFileTypes
+        if outputFormat == .xcstrings {
+            if let xcstringsType = UTType(filenameExtension: "xcstrings") {
+                panel.allowedContentTypes = [xcstringsType]
+            }
+        } else {
+            if let stringsType = UTType(filenameExtension: "strings") {
+                panel.allowedContentTypes = [stringsType]
+            }
+        }
         
         // 设置默认文件名（使用当前时间）
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+        let timestamp = dateFormatter.string(from: Date())
         
-        // 根据选择的输出格式设置默认文件名
-        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date()))\(outputFormat == .xcstrings ? ".xcstrings" : ".strings")"
+        // 设置默认文件名，不包含扩展名（让系统自动添加）
+        let defaultFileName = "Localizable_\(timestamp)"
         panel.nameFieldStringValue = defaultFileName
+        
+        // 允许创建目录
+        panel.canCreateDirectories = true
         
         // 设置面板标题和提示
         panel.title = "保存本地化文件"
-        panel.message = outputFormat == .xcstrings ?
-            "选择保存 .xcstrings 文件的位置" :
+        panel.message = outputFormat == .xcstrings ? 
+            "选择保存 .xcstrings 文件的位置" : 
             "选择保存 .strings 文件的位置（将在选择位置创建语言子目录）"
         
-        panel.begin { response in
+        // 设置初始目录为文稿
+        if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            panel.directoryURL = documentsURL
+        }
+        
+        panel.begin { [self] response in
             if response == .OK, let fileURL = panel.url {
                 self.outputPath = fileURL.path
                 self.isOutputSelected = true
@@ -130,6 +145,25 @@ struct TransferView: View {
             conversionResult = ""
             showSuccessActions = false
         }
+    }
+    
+    // 添加一个辅助方法来更新文件扩展名
+    private func updateOutputPathExtension(to format: LocalizationFormat) {
+        // 如果还没有选择保存路径，不需要更新
+        if outputPath == "未选择保存位置" {
+            return
+        }
+        
+        // 获取当前路径的组件
+        let url = URL(fileURLWithPath: outputPath)
+        let directory = url.deletingLastPathComponent().path
+        let fileName = url.deletingPathExtension().lastPathComponent
+        
+        // 根据新格式设置扩展名
+        let newExtension = format == .xcstrings ? "xcstrings" : "strings"
+        
+        // 构建新路径
+        outputPath = (directory as NSString).appendingPathComponent("\(fileName).\(newExtension)")
     }
     
     var body: some View {
@@ -200,6 +234,12 @@ struct TransferView: View {
                                     .tag(LocalizationFormat.strings)
                             }
                             .pickerStyle(.radioGroup)
+                            .onChange(of: outputFormat) { newFormat in
+                                // 只有在已经选择了保存路径的情况下才更新扩展名
+                                if outputPath != "未选择保存位置" {
+                                    updateOutputPathExtension(to: newFormat)
+                                }
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
