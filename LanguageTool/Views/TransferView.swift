@@ -234,10 +234,10 @@ struct TransferView: View {
                                     .tag(LocalizationFormat.strings)
                             }
                             .pickerStyle(.radioGroup)
-                            .onChange(of: outputFormat) { newFormat in
+                            .onChange(of: outputFormat) { oldValue, newValue in
                                 // 只有在已经选择了保存路径的情况下才更新扩展名
                                 if outputPath != "未选择保存位置" {
-                                    updateOutputPathExtension(to: newFormat)
+                                    updateOutputPathExtension(to: newValue)
                                 }
                             }
                         }
