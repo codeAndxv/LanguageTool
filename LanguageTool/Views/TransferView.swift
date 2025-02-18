@@ -12,19 +12,6 @@ struct TransferView: View {
     @State private var selectedLanguages: Set<Language> = [Language.supportedLanguages[0]] // 默认选中简体中文
     @State private var isLoading: Bool = false
     @State private var showSuccessActions: Bool = false
-    @State private var outputFormat: LocalizationFormat = .xcstrings
-    
-    enum LocalizationFormat {
-        case xcstrings
-        case strings
-        
-        var description: String {
-            switch self {
-            case .xcstrings: return "Xcode Strings Catalog (.xcstrings)"
-            case .strings: return "Strings File (.strings)"
-            }
-        }
-    }
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -36,14 +23,13 @@ struct TransferView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         
-        // 支持 .json、.xcstrings 和 .strings 文件
+        // 支持 .json 和 .xcstrings 文件
         let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
-        let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
-        panel.allowedContentTypes = [.json, xcstringsType, stringsType]
+        panel.allowedContentTypes = [.json, xcstringsType]
         
         // 设置文件类型描述
-        panel.title = "选择本地化文件"
-        panel.message = "请选择 JSON、Localizable.xcstrings 或 Localizable.strings 文件"
+        panel.title = "选择 JSON 或 Localizable.xcstrings 文件"
+        panel.message = "请选择需要处理的本地化文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -55,25 +41,13 @@ struct TransferView: View {
     
     private func selectOutputPath() {
         let panel = NSSavePanel()
-        let xcstringsType = UTType("com.apple.xcode.strings-text")!
-        let stringsType = UTType.propertyList
-        
-        // 根据选择的输出格式设置允许的文件类型
-        panel.allowedContentTypes = [outputFormat == .xcstrings ? xcstringsType : stringsType]
+        panel.allowedContentTypes = [.text]
         
         // 设置默认文件名（使用当前时间）
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-        
-        // 根据选择的输出格式设置默认文件名
-        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date()))\(outputFormat == .xcstrings ? ".xcstrings" : ".strings")"
+        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date())).xcstrings" //Localizable.xcstrings
         panel.nameFieldStringValue = defaultFileName
-        
-        // 设置面板标题和提示
-        panel.title = "保存本地化文件"
-        panel.message = outputFormat == .xcstrings ? 
-            "选择保存 .xcstrings 文件的位置" : 
-            "选择保存 .strings 文件的位置（将在选择位置创建语言子目录）"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -186,20 +160,6 @@ struct TransferView: View {
                             .frame(height: 200)
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(8)
-                        }
-                        
-                        // 输出格式选择部分
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("输出格式")
-                                .font(.headline)
-                            
-                            Picker("输出格式", selection: $outputFormat) {
-                                Text("Xcode Strings Catalog (.xcstrings)")
-                                    .tag(LocalizationFormat.xcstrings)
-                                Text("Strings File (.strings)")
-                                    .tag(LocalizationFormat.strings)
-                            }
-                            .pickerStyle(.radioGroup)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
