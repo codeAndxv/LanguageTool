@@ -12,20 +12,6 @@ struct TransferView: View {
     @State private var selectedLanguages: Set<Language> = [Language.supportedLanguages[0]] // 默认选中简体中文
     @State private var isLoading: Bool = false
     @State private var showSuccessActions: Bool = false
-    @State private var outputFormat: LocalizationFormat = .xcstrings
-    @State private var hasDirectoryPermission: Bool = false // 添加权限状态追踪
-    
-    enum LocalizationFormat {
-        case xcstrings
-        case strings
-        
-        var description: String {
-            switch self {
-            case .xcstrings: return "Xcode Strings Catalog (.xcstrings)"
-            case .strings: return "Strings File (.strings)"
-            }
-        }
-    }
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -37,19 +23,13 @@ struct TransferView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         
-        // 支持 .json、.xcstrings 和 .strings 文件
+        // 支持 .json 和 .xcstrings 文件
         let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
-        let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
-        panel.allowedContentTypes = [.json, xcstringsType, stringsType]
+        panel.allowedContentTypes = [.json, xcstringsType]
         
         // 设置文件类型描述
-        panel.title = "选择本地化文件"
-        panel.message = "请选择 JSON、Localizable.xcstrings 或 Localizable.strings 文件"
-        
-        // 设置初始目录为文稿
-        if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            panel.directoryURL = documentsURL
-        }
+        panel.title = "选择 JSON 或 Localizable.xcstrings 文件"
+        panel.message = "请选择需要处理的本地化文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -61,88 +41,18 @@ struct TransferView: View {
     
     private func selectOutputPath() {
         let panel = NSSavePanel()
-        let xcstringsType = UTType("com.apple.xcode.strings-text")!
-        let stringsType = UTType.propertyList
-        
-        // 根据选择的输出格式设置允许的文件类型
-        panel.allowedContentTypes = [outputFormat == .xcstrings ? xcstringsType : stringsType]
+        panel.allowedContentTypes = [.text]
         
         // 设置默认文件名（使用当前时间）
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-        
-        // 根据选择的输出格式设置默认文件名和扩展名
-        let timestamp = dateFormatter.string(from: Date())
-        let fileExtension = outputFormat == .xcstrings ? "xcstrings" : "strings"
-        let defaultFileName = "Localizable_\(timestamp).\(fileExtension)"
+        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date())).xcstrings" //Localizable.xcstrings
         panel.nameFieldStringValue = defaultFileName
         
-        // 允许创建目录
-        panel.canCreateDirectories = true
-        
-        // 设置面板标题和提示
-        panel.title = "保存本地化文件"
-        panel.message = outputFormat == .xcstrings ? 
-            "选择保存 .xcstrings 文件的位置" : 
-            "选择保存 .strings 文件的位置（将在选择位置创建语言子目录）"
-        
-        // 设置初始目录为文稿
-        if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-            panel.directoryURL = documentsURL
-        }
-        
-        panel.begin { [self] response in
+        panel.begin { response in
             if response == .OK, let fileURL = panel.url {
-                // 如果是 .strings 格式，检查是否已有权限
-                if outputFormat == .strings && !hasDirectoryPermission {
-                    DispatchQueue.main.async {
-                        self.conversionResult = "❌ 未获得目录访问权限，请先选择 .strings 格式获取权限"
-                        self.showResult = true
-                        self.isOutputSelected = false
-                        self.outputPath = "未选择保存位置"
-                    }
-                    return
-                }
-                
                 self.outputPath = fileURL.path
                 self.isOutputSelected = true
-            }
-        }
-    }
-    
-    private func requestDirectoryAccess(at path: String) async -> Bool {
-        return await withCheckedContinuation { continuation in
-            DispatchQueue.main.async {
-                let alert = NSAlert()
-                alert.messageText = "需要访问权限"
-                alert.informativeText = "Language Tool 需要访问系统目录来创建本地化文件。请在接下来的对话框中选择要保存的位置。"
-                alert.alertStyle = .informational
-                alert.addButton(withTitle: "选择位置")
-                alert.addButton(withTitle: "取消")
-                
-                if alert.runModal() == .alertFirstButtonReturn {
-                    let panel = NSOpenPanel()
-                    panel.canChooseFiles = false
-                    panel.canChooseDirectories = true
-                    panel.allowsMultipleSelection = false
-                    panel.message = "请选择要保存本地化文件的目录"
-                    panel.prompt = "选择"
-                    
-                    // 尝试使用传入的路径作为初始目录
-                    panel.directoryURL = URL(fileURLWithPath: path)
-                    
-                    panel.begin { response in
-                        if response == .OK, let selectedURL = panel.url {
-                            // 用户选择了目录，检查是否有写入权限
-                            let hasAccess = FileManager.default.isWritableFile(atPath: selectedURL.path)
-                            continuation.resume(returning: hasAccess)
-                        } else {
-                            continuation.resume(returning: false)
-                        }
-                    }
-                } else {
-                    continuation.resume(returning: false)
-                }
             }
         }
     }
@@ -157,130 +67,19 @@ struct TransferView: View {
         Task {
             isLoading = true
             showResult = false
-            showSuccessActions = false
+            showSuccessActions = false // 重置状态
             
-            do {
-                switch (inputPath as NSString).pathExtension.lowercased() {
-                case "strings":
-                    let parseResult = StringsFileHandler.readStringsFile(at: inputPath)
-                    switch parseResult {
-                    case .success(let translations):
-                        if outputFormat == .xcstrings {
-                            // 转换为 .xcstrings
-                            let result = await StringsFileHandler.convertToXCStrings(
-                                translations: translations,
-                                languages: Array(selectedLanguages).map { $0.code }
-                            )
-                            
-                            switch result {
-                            case .success(let jsonData):
-                                try jsonData.write(to: URL(fileURLWithPath: outputPath))
-                                DispatchQueue.main.async {
-                                    conversionResult = "✅ 转换成功！"
-                                    showSuccessActions = true
-                                }
-                            case .failure(let error):
-                                DispatchQueue.main.async {
-                                    conversionResult = "❌ 转换失败：\(error.localizedDescription)"
-                                }
-                            }
-                        } else {
-                            print("开始生成 .strings 文件...")
-                            let baseDir = (outputPath as NSString).deletingLastPathComponent
-                            
-                            // 直接创建目录和开始转换，因为权限已经在选择路径时获取
-                            try FileManager.default.createDirectory(
-                                atPath: baseDir,
-                                withIntermediateDirectories: true,
-                                attributes: nil
-                            )
-                            
-                            // 先创建所有语言目录
-                            for language in selectedLanguages {
-                                let langDir = (baseDir as NSString).appendingPathComponent("\(language.code).lproj")
-                                if !FileManager.default.fileExists(atPath: langDir) {
-                                    try FileManager.default.createDirectory(
-                                        atPath: langDir,
-                                        withIntermediateDirectories: true,
-                                        attributes: nil
-                                    )
-                                }
-                            }
-                            
-                            // 确认目录创建成功后，再开始翻译过程
-                            for language in selectedLanguages {
-                                print("处理语言: \(language.code)")
-                                let langDir = (baseDir as NSString).appendingPathComponent("\(language.code).lproj")
-                                let stringsPath = (langDir as NSString).appendingPathComponent("Localizable.strings")
-                                
-                                if language.code == "zh-Hans" {
-                                    print("处理源语言文件...")
-                                    let result = StringsFileHandler.generateStringsFile(
-                                        translations: translations,
-                                        to: stringsPath
-                                    )
-                                    if case .failure(let error) = result {
-                                        throw error
-                                    }
-                                } else {
-                                    print("开始翻译: \(language.code)")
-                                    var translatedDict: [String: String] = [:]
-                                    for (key, value) in translations {
-                                        print("翻译: \(key)")
-                                        let translation = try await AIService.shared.translate(
-                                            text: value,
-                                            to: language.code
-                                        )
-                                        translatedDict[key] = translation
-                                    }
-                                    
-                                    print("生成翻译文件: \(language.code)")
-                                    let result = StringsFileHandler.generateStringsFile(
-                                        translations: translatedDict,
-                                        to: stringsPath
-                                    )
-                                    if case .failure(let error) = result {
-                                        throw error
-                                    }
-                                }
-                            }
-                            
-                            print("所有文件生成完成")
-                            DispatchQueue.main.async {
-                                self.conversionResult = "✅ 转换成功！"
-                                self.showSuccessActions = true
-                            }
-                        }
-                    case .failure(let error):
-                        print("解析失败: \(error.localizedDescription)")
-                        DispatchQueue.main.async {
-                            self.conversionResult = "❌ 解析失败：\(error.localizedDescription)"
-                        }
-                    }
-                    
-                default:
-                    // 处理 JSON 和 xcstrings 文件
-                    let result = await JsonUtils.convertToLocalizationFile(
-                        from: inputPath,
-                        to: outputPath,
-                        languages: Array(selectedLanguages).map { $0.code }
-                    )
-                    
-                    DispatchQueue.main.async {
-                        conversionResult = result.message
-                        showSuccessActions = result.success
-                    }
-                }
-            } catch {
-                print("转换过程出错: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self.conversionResult = "❌ 转换失败：\(error.localizedDescription)"
-                }
-            }
+            let result = await JsonUtils.convertToLocalizationFile(
+                from: inputPath,
+                to: outputPath,
+                languages: Array(selectedLanguages).map { $0.code }
+            )
             
             DispatchQueue.main.async {
-                self.isLoading = false
-                self.showResult = true
+                isLoading = false
+                conversionResult = result.message
+                showResult = true
+                showSuccessActions = result.success // 只在成功时显示操作按钮
             }
         }
     }
@@ -356,42 +155,11 @@ struct TransferView: View {
                                             }
                                     }
                                 }
+                                .padding(.horizontal)
                             }
                             .frame(height: 200)
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(8)
-                        }
-                        
-                        // 输出格式选择部分
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("输出格式")
-                                .font(.headline)
-                            
-                            Picker("输出格式", selection: $outputFormat) {
-                                Text("Xcode Strings Catalog (.xcstrings)")
-                                    .tag(LocalizationFormat.xcstrings)
-                                Text("Strings File (.strings)")
-                                    .tag(LocalizationFormat.strings)
-                            }
-                            .pickerStyle(.radioGroup)
-                            .onChange(of: outputFormat) { newFormat in
-                                if newFormat == .strings {
-                                    // 当选择 .strings 格式时，重置输出路径并请求权限
-                                    outputPath = "未选择保存位置"
-                                    isOutputSelected = false
-                                    if let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                                        Task {
-                                            hasDirectoryPermission = await requestDirectoryAccess(at: documentsURL.path)
-                                            if !hasDirectoryPermission {
-                                                DispatchQueue.main.async {
-                                                    conversionResult = "❌ 未获得目录访问权限，无法创建语言子目录"
-                                                    showResult = true
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
