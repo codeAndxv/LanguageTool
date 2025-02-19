@@ -117,4 +117,78 @@ class StringsFileParser {
             return .failure(error)
         }
     }
+    
+    /// 处理 .strings 文件的转换
+    static func processStringsFile(from inputPath: String, 
+                                 to outputPath: String, 
+                                 format: LocalizationFormat,
+                                 languages: Set<Language>) async -> Result<String, Error> {
+        do {
+            let parseResult = parseStringsFile(at: inputPath)
+            switch parseResult {
+            case .success(let translations):
+                if format == .xcstrings {
+                    // 转换为 xcstrings
+                    let xcstringsResult = await convertToXCStrings(
+                        translations: translations,
+                        languages: Array(languages).map { $0.code }
+                    )
+                    
+                    switch xcstringsResult {
+                    case .success(let data):
+                        try data.write(to: URL(fileURLWithPath: outputPath))
+                        return .success("✅ 转换成功！")
+                    case .failure(let error):
+                        return .failure(error)
+                    }
+                } else {
+                    // 生成 .strings 文件
+                    let baseURL = URL(fileURLWithPath: outputPath)
+                    
+                    for language in languages {
+                        let langURL = baseURL.appendingPathComponent("\(language.code).lproj")
+                        let stringsURL = langURL.appendingPathComponent("Localizable.strings")
+                        
+                        try FileManager.default.createDirectory(
+                            at: langURL,
+                            withIntermediateDirectories: true,
+                            attributes: nil
+                        )
+                        
+                        if language.code == "zh-Hans" {
+                            let result = generateStringsFile(
+                                translations: translations,
+                                to: stringsURL.path
+                            )
+                            if case .failure(let error) = result {
+                                throw error
+                            }
+                        } else {
+                            var translatedDict: [String: String] = [:]
+                            for (key, value) in translations {
+                                let translation = try await AIService.shared.translate(
+                                    text: value,
+                                    to: language.code
+                                )
+                                translatedDict[key] = translation
+                            }
+                            
+                            let result = generateStringsFile(
+                                translations: translatedDict,
+                                to: stringsURL.path
+                            )
+                            if case .failure(let error) = result {
+                                throw error
+                            }
+                        }
+                    }
+                    return .success("✅ 转换成功！")
+                }
+            case .failure(let error):
+                return .failure(error)
+            }
+        } catch {
+            return .failure(error)
+        }
+    }
 } 

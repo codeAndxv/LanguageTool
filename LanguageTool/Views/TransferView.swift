@@ -14,18 +14,6 @@ struct TransferView: View {
     @State private var showSuccessActions: Bool = false
     @State private var outputFormat: LocalizationFormat = .xcstrings
     
-    enum LocalizationFormat {
-        case xcstrings
-        case strings
-        
-        var description: String {
-            switch self {
-            case .xcstrings: return "Xcode Strings Catalog (.xcstrings)"
-            case .strings: return "Strings File (.strings)"
-            }
-        }
-    }
-    
     private let columns = [
         GridItem(.adaptive(minimum: 160))
     ]
@@ -123,110 +111,36 @@ struct TransferView: View {
             showResult = false
             showSuccessActions = false
             
-            do {
-                let fileExtension = (inputPath as NSString).pathExtension.lowercased()
+            let fileExtension = (inputPath as NSString).pathExtension.lowercased()
+            let result: (message: String, success: Bool)
+            
+            switch fileExtension {
+            case "strings":
+                let processResult = await StringsFileParser.processStringsFile(
+                    from: inputPath,
+                    to: outputPath,
+                    format: outputFormat,
+                    languages: selectedLanguages
+                )
                 
-                switch fileExtension {
-                case "strings":
-                    let parseResult = StringsFileParser.parseStringsFile(at: inputPath)
-                    switch parseResult {
-                    case .success(let translations):
-                        if outputFormat == .xcstrings {
-                            // xcstrings 处理逻辑保持不变...
-                        } else {
-                            print("开始生成 .strings 文件...")
-                            
-                            // 使用 URL 处理路径
-                            let baseURL = URL(fileURLWithPath: outputPath)
-                            print("基础目录: \(baseURL.path)")
-                            
-                            for language in selectedLanguages {
-                                print("处理语言: \(language.code)")
-                                // 使用 URL 创建语言目录路径
-                                let langURL = baseURL.appendingPathComponent("\(language.code).lproj")
-                                let stringsURL = langURL.appendingPathComponent("Localizable.strings")
-                                
-                                print("创建目录: \(langURL.path)")
-                                do {
-                                    // 使用 URL 创建目录
-                                    try FileManager.default.createDirectory(
-                                        at: langURL,
-                                        withIntermediateDirectories: true,
-                                        attributes: nil
-                                    )
-                                    
-                                    if language.code == "zh-Hans" {
-                                        print("处理源语言文件...")
-                                        // 源语言直接使用原始值
-                                        let result = StringsFileParser.generateStringsFile(
-                                            translations: translations,
-                                            to: stringsURL.path
-                                        )
-                                        if case .failure(let error) = result {
-                                            throw error
-                                        }
-                                    } else {
-                                        print("开始翻译: \(language.code)")
-                                        // 其他语言需要翻译
-                                        var translatedDict: [String: String] = [:]
-                                        for (key, value) in translations {
-                                            print("翻译: \(key)")
-                                            let translation = try await AIService.shared.translate(
-                                                text: value,
-                                                to: language.code
-                                            )
-                                            translatedDict[key] = translation
-                                        }
-                                        
-                                        print("生成翻译文件: \(language.code)")
-                                        let result = StringsFileParser.generateStringsFile(
-                                            translations: translatedDict,
-                                            to: stringsURL.path
-                                        )
-                                        if case .failure(let error) = result {
-                                            throw error
-                                        }
-                                    }
-                                } catch {
-                                    print("处理语言 \(language.code) 时出错: \(error.localizedDescription)")
-                                    throw error
-                                }
-                            }
-                            
-                            print("所有文件生成完成")
-                            DispatchQueue.main.async {
-                                self.conversionResult = "✅ 转换成功！"
-                                self.showSuccessActions = true
-                            }
-                        }
-                    case .failure(let error):
-                        print("解析失败: \(error.localizedDescription)")
-                        DispatchQueue.main.async {
-                            self.conversionResult = "❌ 解析失败：\(error.localizedDescription)"
-                        }
-                    }
-                    
-                default:
-                    // 其他格式处理逻辑保持不变...
-                    let result = await JsonUtils.convertToLocalizationFile(
-                        from: inputPath,
-                        to: outputPath,
-                        languages: Array(selectedLanguages).map { $0.code }
-                    )
-                    
-                    DispatchQueue.main.async {
-                        conversionResult = result.message
-                        showSuccessActions = result.success
-                    }
+                switch processResult {
+                case .success(let message):
+                    result = (message: message, success: true)
+                case .failure(let error):
+                    result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
                 }
-            } catch {
-                print("转换过程出错: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self.conversionResult = "❌ 转换失败：\(error.localizedDescription)"
-                }
+                
+            default:
+                result = await JsonUtils.convertToLocalizationFile(
+                    from: inputPath,
+                    to: outputPath,
+                    languages: Array(selectedLanguages).map { $0.code }
+                )
             }
             
             DispatchQueue.main.async {
+                self.conversionResult = result.message
+                self.showSuccessActions = result.success
                 self.isLoading = false
                 self.showResult = true
             }
@@ -253,25 +167,6 @@ struct TransferView: View {
             conversionResult = ""
             showSuccessActions = false
         }
-    }
-    
-    // 添加一个辅助方法来更新文件扩展名
-    private func updateOutputPathExtension(to format: LocalizationFormat) {
-        // 如果还没有选择保存路径，不需要更新
-        if outputPath == "未选择保存位置" {
-            return
-        }
-        
-        // 获取当前路径的组件
-        let url = URL(fileURLWithPath: outputPath)
-        let directory = url.deletingLastPathComponent().path
-        let fileName = url.deletingPathExtension().lastPathComponent
-        
-        // 根据新格式设置扩展名
-        let newExtension = format == .xcstrings ? "xcstrings" : "strings"
-        
-        // 构建新路径
-        outputPath = (directory as NSString).appendingPathComponent("\(fileName).\(newExtension)")
     }
     
     var body: some View {
@@ -464,69 +359,3 @@ struct LanguageToggle: View {
         .cornerRadius(8)
     }
 }
-
-//
-//import SwiftUI
-//
-//struct ContentView: View {
-//    @State private var showAlert = false
-//    @State private var showPermissionDeniedAlert = false
-//    @State private var errorMessage = ""
-//    @State private var selectedDirectory: URL? = nil
-//
-//    var body: some View {
-//        Button("选择目录并创建文件夹") {
-//            selectDirectoryAndCreateFolder()
-//        }
-//        .alert(isPresented: $showAlert) {
-//            Alert(title: Text("错误"), message: Text(errorMessage), dismissButton: .default(Text("确定")))
-//        }
-//        .alert(isPresented: $showPermissionDeniedAlert) {
-//            Alert(
-//                title: Text("权限被拒绝"),
-//                message: Text("您拒绝了访问所选目录的权限，应用将无法正常工作。"),
-//                dismissButton: .default(Text("确定"))
-//            )
-//        }
-//    }
-//
-//    func selectDirectoryAndCreateFolder() {
-//        let openPanel = NSOpenPanel()
-//        openPanel.canChooseFiles = false
-//        openPanel.canChooseDirectories = true
-//        openPanel.allowsMultipleSelection = false
-//        openPanel.prompt = "选择要保存文件夹的目录"
-//
-//        let result = openPanel.runModal()
-//
-//        if result == .OK {
-//            guard let url = openPanel.urls.first else { return }
-//            selectedDirectory = url
-//
-//            createFolder(at: url)
-//        }
-//    }
-//
-//    func createFolder(at directory: URL) {
-//        let fileManager = FileManager.default
-//        let folderName = "NewFolder"
-//        let folderURL = directory.appendingPathComponent(folderName)
-//
-//        do {
-//            try fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
-//            print("文件夹创建成功")
-//        } catch {
-//            errorMessage = error.localizedDescription
-//            showAlert = true
-//            print("创建文件夹失败：\(error)")
-//
-//            // 检查是否是权限错误
-////            if let nsError = error as NSError {
-////                if nsError.code == NSFileReadUnknownError {
-////                    // 用户拒绝了访问权限
-////                    showPermissionDeniedAlert = true
-////                }
-////            }
-//        }
-//    }
-//}
