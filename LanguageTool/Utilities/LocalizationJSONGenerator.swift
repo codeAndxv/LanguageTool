@@ -44,8 +44,9 @@ class LocalizationJSONGenerator {
                 }
             } else {
                 do {
-                    // 批量翻译
-                    let translations = try await AIService.shared.translateBatch(
+                    // 使用优化后的批量翻译方法
+                    print("开始批量翻译 [\(language)]...")
+                    let translations = try await AIService.shared.batchTranslate(
                         texts: keys,
                         to: languageNames[language] ?? language
                     )

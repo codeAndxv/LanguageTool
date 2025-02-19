@@ -136,13 +136,17 @@ class AIService {
         }
     }
     
-    // 批量翻译
-    func translateBatch(texts: [String], to language: String) async throws -> [String] {
-        var translations: [String] = []
-        for text in texts {
-            let translation = try await translate(text: text, to: language)
-            translations.append(translation)
-        }
-        return translations
+    /// 批量翻译文本
+    func batchTranslate(texts: [String], to targetLanguage: String) async throws -> [String] {
+        // 将所有文本合并成一个字符串，使用特殊分隔符
+        let separator = "|||"
+        let combinedText = texts.joined(separator: separator)
+        
+        // 翻译合并后的文本
+        let translatedText = try await translate(text: combinedText, to: targetLanguage)
+        
+        // 分割翻译结果
+        return translatedText.components(separatedBy: separator)
     }
+    
 }

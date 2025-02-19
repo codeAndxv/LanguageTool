@@ -142,10 +142,11 @@ class StringsFileParser {
                         return .failure(error)
                     }
                 } else {
-                    // 生成 .strings 文件
+                    print("开始生成 .strings 文件...")
                     let baseURL = URL(fileURLWithPath: outputPath)
                     
                     for language in languages {
+                        print("处理语言: \(language.code)")
                         let langURL = baseURL.appendingPathComponent("\(language.code).lproj")
                         let stringsURL = langURL.appendingPathComponent("Localizable.strings")
                         
@@ -164,15 +165,25 @@ class StringsFileParser {
                                 throw error
                             }
                         } else {
+                            // 批量翻译优化
+                            let values = Array(translations.values)
+                            let keys = Array(translations.keys)
+                            
+                            print("开始批量翻译: \(language.code)")
+                            let translatedValues = try await AIService.shared.batchTranslate(
+                                texts: values,
+                                to: language.code
+                            )
+                            
+                            // 将翻译结果与键重新组合
                             var translatedDict: [String: String] = [:]
-                            for (key, value) in translations {
-                                let translation = try await AIService.shared.translate(
-                                    text: value,
-                                    to: language.code
-                                )
-                                translatedDict[key] = translation
+                            for (index, key) in keys.enumerated() {
+                                if index < translatedValues.count {
+                                    translatedDict[key] = translatedValues[index]
+                                }
                             }
                             
+                            print("生成翻译文件: \(language.code)")
                             let result = generateStringsFile(
                                 translations: translatedDict,
                                 to: stringsURL.path
@@ -190,5 +201,6 @@ class StringsFileParser {
         } catch {
             return .failure(error)
         }
+        return .success("✅ 转换成功！")
     }
 } 
