@@ -149,4 +149,50 @@ class AIService {
         return translatedText.components(separatedBy: separator)
     }
     
+    /// 测试 Gemini API 连接
+    func testGemini() async throws {
+        let apiKey = "YOUR_API_KEY"  // 替换为实际的 API key
+        let urlString = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\(apiKey)"
+        let url = URL(string: urlString)!
+        
+        // 构建请求体
+        let requestBody: [String: Any] = [
+            "contents": [
+                [
+                    "parts": [
+                        [
+                            "text": "Hello, this is a test message."
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        
+        print("开始测试 Gemini API...")
+        print("请求 URL: \(urlString)")
+        print("请求体: \(requestBody)")
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("响应状态码: \(httpResponse.statusCode)")
+            }
+            
+            if let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                print("响应数据: \(jsonResponse)")
+            }
+            
+            print("API 测试成功")
+        } catch {
+            print("API 测试失败: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
 }
