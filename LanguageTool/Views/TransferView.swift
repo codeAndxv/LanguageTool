@@ -30,23 +30,62 @@ struct TransferView: View {
         
         switch selectedPlatform {
         case .iOS:
-            let xcstringsType = UTType("com.apple.xcode.strings-text")!
-            let stringsType = UTType.propertyList
-            allowedTypes = [xcstringsType, stringsType]
+            // 使用文件扩展名来识别文件类型
+            if let xcstringsType = UTType(filenameExtension: "xcstrings") {
+                allowedTypes.append(xcstringsType)
+            }
+            if let stringsType = UTType(filenameExtension: "strings") {
+                allowedTypes.append(stringsType)
+            }
+            
+//            // 支持 .json、.xcstrings 和 .strings 文件
+//            let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
+//            let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
+//            panel.allowedContentTypes = [.json, xcstringsType, stringsType]
+            
         case .flutter:
-            let arbType = UTType(filenameExtension: "arb")!
-            allowedTypes = [arbType]
+            if let arbType = UTType(filenameExtension: "arb") {
+                allowedTypes.append(arbType)
+            }
+            
         case .electron:
-            allowedTypes = [.json]
+            // 只允许纯 JSON 文件
+            allowedTypes = [UTType.json]  // 使用系统预定义的 JSON 类型
+        }
+        
+        // 确保至少有一个文件类型被设置
+        if allowedTypes.isEmpty {
+            print("警告：没有设置任何文件类型")
+            allowedTypes = [.json]  // 默认使用 JSON 类型
         }
         
         panel.allowedContentTypes = allowedTypes
         
+        // 根据平台设置提示信息
         panel.title = "选择本地化文件"
-        panel.message = "请选择 \(selectedPlatform.description) 文件"
+        switch selectedPlatform {
+        case .iOS:
+            panel.message = "请选择 .strings 或 .xcstrings 文件"
+        case .flutter:
+            panel.message = "请选择 .arb 文件"
+        case .electron:
+            panel.message = "请选择 .json 文件"
+        }
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
+                // 关键修改 2: 校验文件扩展名
+                switch selectedPlatform {
+                case .electron:
+                    let fileExtension = fileURL.pathExtension.lowercased()
+                    guard fileExtension == "json" else {
+                        // 显示错误提示
+                        self.showErrorAlert(message: "Electron 平台仅支持 .json 文件")
+                        return
+                    }
+                default: break
+                }
+                
                 self.inputPath = fileURL.path
                 self.isInputSelected = true
                 
@@ -211,6 +250,11 @@ struct TransferView: View {
                 }
                 
             case .electron:
+                // 严格校验输入文件类型
+                guard fileExtension == "json" else {
+                    result = (message: "❌ Electron 平台仅支持 .json 文件", success: false)
+                    break
+                }
                 let processResult = await ElectronLocalizationHandler.processLocalizationFile(
                     from: inputPath,
                     to: outputPath,
@@ -253,6 +297,16 @@ struct TransferView: View {
             conversionResult = ""
             showSuccessActions = false
         }
+    }
+    
+    // MARK: - 新增错误提示方法
+    private func showErrorAlert(message: String) {
+        let alert = NSAlert()
+        alert.messageText = "文件类型错误"
+        alert.informativeText = message
+        alert.alertStyle = .warning
+        alert.addButton(withTitle: "确定")
+        alert.runModal()
     }
     
     var body: some View {
