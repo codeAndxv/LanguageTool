@@ -4,10 +4,10 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 功能特点
 
-- 📖 支持读取 JSON 和 `.xcstrings` 文件
+- 📖 支持读取Localizable.xcstrings 或 Localizable.strings 和 JSON文件
 - 🌍 支持 50+ 种语言的自动翻译
 - 🔄 批量翻译处理
-- 💾 生成标准的 Xcode `.xcstrings` 格式
+- 💾 生成标准的 Xcode `.xcstrings`或`.strings` 格式
 - ⚡️ 简单直观的用户界面
 - 🎯 完全适配 Xcode 本地化工作流
 
@@ -32,7 +32,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 5. 选择保存位置
 6. 点击"开始转换"
 7. 等待转换完成
-8. 将生成的 .xcstrings 文件添加到你的 Xcode 项目中
+8. 将生成的 `.xcstrings`或`.strings` 文件添加到你的 Xcode 项目中
 
 ## 系统要求
 
