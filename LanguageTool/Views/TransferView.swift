@@ -12,6 +12,7 @@ struct TransferView: View {
     @State private var selectedLanguages: Set<Language> = [Language.supportedLanguages[0]] // 默认选中简体中文
     @State private var isLoading: Bool = false
     @State private var showSuccessActions: Bool = false
+    @State private var outputFormat: LocalizationFormat = .xcstrings
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -23,36 +24,77 @@ struct TransferView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         
-        // 支持 .json 和 .xcstrings 文件
+        // 支持 .json、.xcstrings 和 .strings 文件
         let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
-        panel.allowedContentTypes = [.json, xcstringsType]
+        let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
+        panel.allowedContentTypes = [.json, xcstringsType, stringsType]
         
         // 设置文件类型描述
-        panel.title = "选择 JSON 或 Localizable.xcstrings 文件"
-        panel.message = "请选择需要处理的本地化文件"
+        panel.title = "选择本地化文件"
+        panel.message = "请选择 JSON、Localizable.xcstrings 或 Localizable.strings 文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
                 self.inputPath = fileURL.path
                 self.isInputSelected = true
+                
+                // 根据输入文件类型自动设置输出格式
+                let fileExtension = fileURL.pathExtension.lowercased()
+                if fileExtension == "strings" {
+                    self.outputFormat = .strings
+                    // 重置输出路径，因为格式改变了
+                    self.outputPath = "未选择保存位置"
+                    self.isOutputSelected = false
+                } else {
+                    self.outputFormat = .xcstrings
+                }
             }
         }
     }
     
     private func selectOutputPath() {
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.text]
-        
-        // 设置默认文件名（使用当前时间）
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
-        let defaultFileName = "Localizable_\(dateFormatter.string(from: Date())).xcstrings" //Localizable.xcstrings
-        panel.nameFieldStringValue = defaultFileName
-        
-        panel.begin { response in
-            if response == .OK, let fileURL = panel.url {
-                self.outputPath = fileURL.path
-                self.isOutputSelected = true
+        // 对于 .strings 格式，使用目录选择面板
+        if outputFormat == .strings {
+            let openPanel = NSOpenPanel()
+            openPanel.canChooseFiles = false
+            openPanel.canChooseDirectories = true
+            openPanel.allowsMultipleSelection = false
+            openPanel.message = "请选择保存语言文件的目录"
+            openPanel.prompt = "选择"
+            openPanel.title = "选择保存目录"
+            
+            // 设置可以访问的目录类型
+            openPanel.treatsFilePackagesAsDirectories = true
+            
+            openPanel.begin { [self] response in
+                if response == .OK, let directoryURL = openPanel.url {
+                    self.outputPath = directoryURL.path
+                    self.isOutputSelected = true
+                }
+            }
+        } else {
+            // .xcstrings 文件的保存逻辑
+            let panel = NSSavePanel()
+            if let xcstringsType = UTType(filenameExtension: "xcstrings") {
+                panel.allowedContentTypes = [xcstringsType]
+            }
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateFormat = "yyyyMMdd_HHmmss"
+            let timestamp = dateFormatter.string(from: Date())
+            
+            let defaultFileName = "Localizable_\(timestamp)"
+            panel.nameFieldStringValue = defaultFileName
+            
+            panel.canCreateDirectories = true
+            panel.title = "保存本地化文件"
+            panel.message = "选择保存 .xcstrings 文件的位置"
+            
+            panel.begin { [self] response in
+                if response == .OK, let fileURL = panel.url {
+                    self.outputPath = fileURL.path
+                    self.isOutputSelected = true
+                }
             }
         }
     }
@@ -67,19 +109,40 @@ struct TransferView: View {
         Task {
             isLoading = true
             showResult = false
-            showSuccessActions = false // 重置状态
+            showSuccessActions = false
             
-            let result = await JsonUtils.convertToLocalizationFile(
-                from: inputPath,
-                to: outputPath,
-                languages: Array(selectedLanguages).map { $0.code }
-            )
+            let fileExtension = (inputPath as NSString).pathExtension.lowercased()
+            let result: (message: String, success: Bool)
+            
+            switch fileExtension {
+            case "strings":
+                let processResult = await StringsFileParser.processStringsFile(
+                    from: inputPath,
+                    to: outputPath,
+                    format: outputFormat,
+                    languages: selectedLanguages
+                )
+                
+                switch processResult {
+                case .success(let message):
+                    result = (message: message, success: true)
+                case .failure(let error):
+                    result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
+                }
+                
+            default:
+                result = await JsonUtils.convertToLocalizationFile(
+                    from: inputPath,
+                    to: outputPath,
+                    languages: Array(selectedLanguages).map { $0.code }
+                )
+            }
             
             DispatchQueue.main.async {
-                isLoading = false
-                conversionResult = result.message
-                showResult = true
-                showSuccessActions = result.success // 只在成功时显示操作按钮
+                self.conversionResult = result.message
+                self.showSuccessActions = result.success
+                self.isLoading = false
+                self.showResult = true
             }
         }
     }
@@ -161,6 +224,25 @@ struct TransferView: View {
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(8)
                         }
+                        
+                        // 输出格式选择部分
+//                        VStack(alignment: .leading, spacing: 10) {
+//                            Text("输出格式")
+//                                .font(.headline)
+//                            
+//                            Picker("输出格式", selection: $outputFormat) {
+//                                Text("Xcode Strings Catalog (.xcstrings)")
+//                                    .tag(LocalizationFormat.xcstrings)
+//                                Text("Strings File (.strings)")
+//                                    .tag(LocalizationFormat.strings)
+//                            }
+//                            .pickerStyle(.radioGroup)
+//                            .onChange(of: outputFormat) { oldValue, newValue in
+//                                // 每次切换格式时都重置输出路径
+//                                outputPath = "未选择保存位置"
+//                                isOutputSelected = false
+//                            }
+//                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     

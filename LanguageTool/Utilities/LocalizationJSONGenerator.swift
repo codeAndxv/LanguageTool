@@ -3,6 +3,16 @@ import AppKit
 
 class LocalizationJSONGenerator {
     static func generateJSON(for keys: [String], languages: [String] = ["zh-Hans", "en", "zh-Hant", "ja", "ko", "es", "fr", "de"]) async -> Data? {
+//        // 添加 API 测试
+//        do {
+//            print("正在测试 Gemini API 连接...")
+//            try await AIService.shared.testGemini()
+//            print("API 测试成功，继续生成 JSON...")
+//        } catch {
+//            print("Gemini API 测试失败: \(error.localizedDescription)")
+//            return nil
+//        }
+        
         var localizationData: [String: Any] = [
             "version": "1.0",
             "sourceLanguage": "zh-Hans",
@@ -44,8 +54,9 @@ class LocalizationJSONGenerator {
                 }
             } else {
                 do {
-                    // 批量翻译
-                    let translations = try await AIService.shared.translateBatch(
+                    // 使用优化后的批量翻译方法
+                    print("开始批量翻译 [\(language)]...")
+                    let translations = try await AIService.shared.batchTranslate(
                         texts: keys,
                         to: languageNames[language] ?? language
                     )

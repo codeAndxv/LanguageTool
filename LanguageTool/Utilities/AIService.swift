@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct Message: Codable {
     let role: String
@@ -7,6 +8,9 @@ struct Message: Codable {
 
 class AIService {
     static let shared = AIService()
+    
+    @AppStorage("selectedAIService") private var selectedService: AIServiceType = .deepseek
+    @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
     
     private var apiKey: String {
         AppSettings.shared.apiKey
@@ -120,9 +124,32 @@ class AIService {
         task.resume()
     }
     
-    func translate(text: String, to language: String) async throws -> String {
+    func translate(text: String, to targetLanguage: String) async throws -> String {
+        switch selectedService {
+        case .deepseek:
+            return try await translateWithDeepseek(text: text, to: targetLanguage)
+        case .gemini:
+            return try await translateWithGemini(text: text, to: targetLanguage)
+        }
+    }
+    
+    /// 批量翻译文本
+    func batchTranslate(texts: [String], to targetLanguage: String) async throws -> [String] {
+        // 将所有文本合并成一个字符串，使用特殊分隔符
+        let separator = "|||"
+        let combinedText = texts.joined(separator: separator)
+        
+        // 根据选择的服务进行翻译
+        let translatedText = try await translate(text: combinedText, to: targetLanguage)
+        
+        // 分割翻译结果
+        return translatedText.components(separatedBy: separator)
+    }
+    
+    // 原有的 DeepSeek 翻译方法
+    private func translateWithDeepseek(text: String, to targetLanguage: String) async throws -> String {
         let message = Message(role: "system", 
-                            content: "将以下文本翻译成\(language)语言，只需要返回翻译结果，不需要任何解释：\n\(text)")
+                            content: "将以下文本翻译成\(targetLanguage)语言，只需要返回翻译结果，不需要任何解释：\n\(text)")
         
         return try await withCheckedThrowingContinuation { continuation in
             sendMessage(messages: [message]) { result in
@@ -136,13 +163,91 @@ class AIService {
         }
     }
     
-    // 批量翻译
-    func translateBatch(texts: [String], to language: String) async throws -> [String] {
-        var translations: [String] = []
-        for text in texts {
-            let translation = try await translate(text: text, to: language)
-            translations.append(translation)
+    // 新增的 Gemini 翻译方法
+    private func translateWithGemini(text: String, to targetLanguage: String) async throws -> String {
+        let urlString = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\(geminiApiKey)"
+        guard let url = URL(string: urlString) else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])
         }
-        return translations
+        
+        let prompt = "Translate the following text to \(targetLanguage). Only return the translation, no explanations: \(text)"
+        
+        let requestBody: [String: Any] = [
+            "contents": [
+                [
+                    "parts": [
+                        [
+                            "text": prompt
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        if let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let candidates = jsonResponse["candidates"] as? [[String: Any]],
+           let firstCandidate = candidates.first,
+           let content = firstCandidate["content"] as? [String: Any],
+           let parts = content["parts"] as? [[String: Any]],
+           let firstPart = parts.first,
+           let translation = firstPart["text"] as? String {
+            return translation
+        }
+        
+        throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to parse response"])
     }
+    
+    /// 测试 Gemini API 连接
+    func testGemini() async throws {
+        let apiKey = "YOUR_API_KEY"  // 替换为实际的 API key
+        let urlString = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\(apiKey)"
+        let url = URL(string: urlString)!
+        
+        // 构建请求体
+        let requestBody: [String: Any] = [
+            "contents": [
+                [
+                    "parts": [
+                        [
+                            "text": "Hello, this is a test message."
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        
+        print("开始测试 Gemini API...")
+        print("请求 URL: \(urlString)")
+        print("请求体: \(requestBody)")
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            if let httpResponse = response as? HTTPURLResponse {
+                print("响应状态码: \(httpResponse.statusCode)")
+            }
+            
+            if let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                print("响应数据: \(jsonResponse)")
+            }
+            
+            print("API 测试成功")
+        } catch {
+            print("API 测试失败: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
 }

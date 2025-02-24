@@ -1,8 +1,8 @@
 import Foundation
 
-class StringsFileHandler {
-    /// 从 .strings 文件中读取键值对
-    static func readStringsFile(at path: String) -> Result<[String: String], Error> {
+class StringsFileParser {
+    /// 从 .strings 文件中提取键值对
+    static func parseStringsFile(at path: String) -> Result<[String: String], Error> {
         do {
             let content = try String(contentsOfFile: path, encoding: .utf8)
             var result: [String: String] = [:]
@@ -87,10 +87,7 @@ class StringsFileHandler {
                 } else {
                     do {
                         // 使用 AI 服务翻译
-                        let translation = try await AIService.shared.translate(
-                            text: sourceValue,
-                            to: language
-                        )
+                        let translation = try await AIService.shared.translate(text: sourceValue, to: language)
                         localizationsDict[language] = [
                             "stringUnit": [
                                 "state": "translated",
@@ -119,5 +116,91 @@ class StringsFileHandler {
         } catch {
             return .failure(error)
         }
+    }
+    
+    /// 处理 .strings 文件的转换
+    static func processStringsFile(from inputPath: String, 
+                                 to outputPath: String, 
+                                 format: LocalizationFormat,
+                                 languages: Set<Language>) async -> Result<String, Error> {
+        do {
+            let parseResult = parseStringsFile(at: inputPath)
+            switch parseResult {
+            case .success(let translations):
+                if format == .xcstrings {
+                    // 转换为 xcstrings
+                    let xcstringsResult = await convertToXCStrings(
+                        translations: translations,
+                        languages: Array(languages).map { $0.code }
+                    )
+                    
+                    switch xcstringsResult {
+                    case .success(let data):
+                        try data.write(to: URL(fileURLWithPath: outputPath))
+                        return .success("✅ 转换成功！")
+                    case .failure(let error):
+                        return .failure(error)
+                    }
+                } else {
+                    print("开始生成 .strings 文件...")
+                    let baseURL = URL(fileURLWithPath: outputPath)
+                    
+                    for language in languages {
+                        print("处理语言: \(language.code)")
+                        let langURL = baseURL.appendingPathComponent("\(language.code).lproj")
+                        let stringsURL = langURL.appendingPathComponent("Localizable.strings")
+                        
+                        try FileManager.default.createDirectory(
+                            at: langURL,
+                            withIntermediateDirectories: true,
+                            attributes: nil
+                        )
+                        
+                        if language.code == "zh-Hans" {
+                            let result = generateStringsFile(
+                                translations: translations,
+                                to: stringsURL.path
+                            )
+                            if case .failure(let error) = result {
+                                throw error
+                            }
+                        } else {
+                            // 批量翻译优化
+                            let values = Array(translations.values)
+                            let keys = Array(translations.keys)
+                            
+                            print("开始批量翻译: \(language.code)")
+                            let translatedValues = try await AIService.shared.batchTranslate(
+                                texts: values,
+                                to: language.code
+                            )
+                            
+                            // 将翻译结果与键重新组合
+                            var translatedDict: [String: String] = [:]
+                            for (index, key) in keys.enumerated() {
+                                if index < translatedValues.count {
+                                    translatedDict[key] = translatedValues[index]
+                                }
+                            }
+                            
+                            print("生成翻译文件: \(language.code)")
+                            let result = generateStringsFile(
+                                translations: translatedDict,
+                                to: stringsURL.path
+                            )
+                            if case .failure(let error) = result {
+                                throw error
+                            }
+                        }
+                    }
+                    return .success("✅ 转换成功！")
+                }
+            case .failure(let error):
+                return .failure(error)
+            }
+        } catch {
+            return .failure(error)
+        }
+        return .success("✅ 转换成功！")
     }
 } 
