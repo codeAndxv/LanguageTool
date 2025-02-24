@@ -138,45 +138,42 @@ class AIService {
     
     /// 批量翻译文本
     func batchTranslate(texts: [String], to targetLanguage: String) async throws -> [String] {
-        var translatedTexts: [String] = []
+        // 将所有文本合并成一个字符串，使用特殊分隔符
+        let separator = "|||"
+        let combinedText = texts.joined(separator: separator)
         
-        // 将数组分批处理
-        let batches = stride(from: 0, to: texts.count, by: batchSize).map {
-            Array(texts[$0..<min($0 + batchSize, texts.count)])
-        }
+        // 生成翻译提示
+        let prompt = """
+        请将以下文本翻译成\(targetLanguage)语言。
+        每个文本之间使用 ||| 分隔，请保持这个分隔符：
         
-        // 每次处理一批文本
-        for batch in batches {
-            let prompt = generateTranslationPrompt(texts: batch, targetLanguage: targetLanguage)
-            let messages = [Message(role: "user", content: prompt)]
-            
-            // 使用 async/await 方式调用
-            let response = try await withCheckedThrowingContinuation { continuation in
-                sendMessage(messages: messages) { result in
-                    switch result {
-                    case .success(let content):
-                        continuation.resume(returning: content)
-                    case .failure(let error):
-                        continuation.resume(throwing: error)
-                    }
+        \(combinedText)
+        """
+        
+        let messages = [Message(role: "user", content: prompt)]
+        
+        // 发送翻译请求
+        let response = try await withCheckedThrowingContinuation { continuation in
+            sendMessage(messages: messages) { result in
+                switch result {
+                case .success(let content):
+                    continuation.resume(returning: content)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
-            
-            let translations = parseTranslations(from: response)
-            
-            // 清理每个翻译文本
-            let cleanedTranslations = translations.map { text -> String in
-                return text
-                    .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-                    .replacingOccurrences(of: "\n", with: " ")
-                    .replacingOccurrences(of: "\r", with: " ")
-                    .replacingOccurrences(of: "  ", with: " ")
-            }
-            
-            translatedTexts.append(contentsOf: cleanedTranslations)
         }
         
-        return translatedTexts
+        // 清理并分割翻译结果
+        let cleanedResponse = response
+            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+            .replacingOccurrences(of: "  ", with: " ")
+        
+        return cleanedResponse.components(separatedBy: separator)
+            .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
     }
     
     /// 生成翻译提示
