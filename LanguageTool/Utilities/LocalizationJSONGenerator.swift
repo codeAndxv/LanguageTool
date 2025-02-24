@@ -67,7 +67,8 @@ class LocalizationJSONGenerator {
                             stringsDict[key] = ["localizations": [:]]
                         }
                         if var localizations = stringsDict[key] as? [String: Any],
-                           var localizationsDict = localizations["localizations"] as? [String: Any] {
+                           var localizationsDict = localizations["localizations"] as? [String: Any],
+                           index < translations.count {
                             localizationsDict[language] = [
                                 "stringUnit": [
                                     "state": "translated",
