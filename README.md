@@ -1,15 +1,18 @@
 # Language Tool
 
-Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目的多语言本地化文件。它可以直接读取和生成 Xcode 的 `.xcstrings` 文件，并通过 AI 翻译服务自动翻译成多种语言。
+Language Tool 是一个 macOS 应用程序，用于自动化生成多平台的多语言本地化文件。支持 iOS、Flutter 和 Electron 项目的本地化文件生成。
 
 ## 功能特点
 
-- 📖 支持读取Localizable.xcstrings 或 Localizable.strings 和 JSON文件
+- 📱 支持多个平台：
+  - iOS: `.xcstrings` 和 `.strings` 文件
+  - Flutter: `.arb` 文件
+  - Electron: 本地化 `.json` 文件
 - 🌍 支持 50+ 种语言的自动翻译
 - 🔄 批量翻译处理
-- 💾 生成标准的 Xcode `.xcstrings`或`.strings` 格式
+- 💾 按平台生成标准格式的本地化文件
 - ⚡️ 简单直观的用户界面
-- 🎯 完全适配 Xcode 本地化工作流
+- 🎯 完全适配各平台的本地化工作流
 
 ## 支持的语言
 
@@ -24,20 +27,30 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 使用方法
 
-1. 启动应用程序![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/2pmTBE20250213230424.png)
+1. 启动应用程序
+   ![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/ktIJ4k20250225013727.png)
 2. 在设置中配置 AI 服务的 API Key
    ![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/xTfNrr20250224113359.png)
-3. 选择源文件（Localizable.xcstrings 或 Localizable.strings 文件）
-4. 选择目标语言
-5. 选择保存位置
-6. 点击"开始转换"
-7. 等待转换完成
-8. 将生成的 `.xcstrings`或`.strings` 文件添加到你的 Xcode 项目中
+3. 选择目标平台（iOS/Flutter/Electron）
+4. 选择源文件：
+   - iOS: 选择 `.xcstrings` 或 `.strings` 文件
+   - Flutter: 选择 `.arb` 文件
+   - Electron: 选择 `.json` 文件
+5. 选择目标语言
+6. 选择保存位置
+7. 点击"开始转换"
+8. 等待转换完成
+9. 将生成的文件添加到你的项目中：
+   - iOS: 添加 `.xcstrings` 或 `.strings` 文件到 Xcode 项目
+   - Flutter: 将 `.arb` 文件放入 `lib/l10n` 目录
+   - Electron: 将生成的 JSON 文件放入项目的语言资源目录
 
 ## 系统要求
 
 - macOS 13.0 或更高版本
-- Xcode 15.0 或更高版本（用于 .xcstrings 支持）
+- 对于 iOS 开发：Xcode 15.0 或更高版本（用于 .xcstrings 支持）
+- 对于 Flutter 开发：Flutter SDK
+- 对于 Electron 开发：Node.js 环境
 
 ## 安装
 
@@ -77,6 +90,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 - 使用前需要配置有效的 DeepSeek AI 或者 Gemini 服务 API Key
 - 建议在使用前备份原有的本地化文件
 - 翻译结果可能需要人工审核以确保准确性
+- 不同平台的本地化文件格式有所不同，请确保选择正确的平台
 
 ## 贡献
 
