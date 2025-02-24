@@ -12,6 +12,9 @@ class AIService {
     @AppStorage("selectedAIService") private var selectedService: AIServiceType = .deepseek
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
     
+    // 添加批处理大小属性
+    private let batchSize = 10  // 每批处理10个文本
+    
     private var apiKey: String {
         AppSettings.shared.apiKey
     }
@@ -135,15 +138,82 @@ class AIService {
     
     /// 批量翻译文本
     func batchTranslate(texts: [String], to targetLanguage: String) async throws -> [String] {
-        // 将所有文本合并成一个字符串，使用特殊分隔符
-        let separator = "|||"
-        let combinedText = texts.joined(separator: separator)
+        var translatedTexts: [String] = []
         
-        // 根据选择的服务进行翻译
-        let translatedText = try await translate(text: combinedText, to: targetLanguage)
+        // 将数组分批处理
+        let batches = stride(from: 0, to: texts.count, by: batchSize).map {
+            Array(texts[$0..<min($0 + batchSize, texts.count)])
+        }
         
-        // 分割翻译结果
-        return translatedText.components(separatedBy: separator)
+        // 每次处理一批文本
+        for batch in batches {
+            let prompt = generateTranslationPrompt(texts: batch, targetLanguage: targetLanguage)
+            let messages = [Message(role: "user", content: prompt)]
+            
+            // 使用 async/await 方式调用
+            let response = try await withCheckedThrowingContinuation { continuation in
+                sendMessage(messages: messages) { result in
+                    switch result {
+                    case .success(let content):
+                        continuation.resume(returning: content)
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+            
+            let translations = parseTranslations(from: response)
+            
+            // 清理每个翻译文本
+            let cleanedTranslations = translations.map { text -> String in
+                return text
+                    .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                    .replacingOccurrences(of: "\n", with: " ")
+                    .replacingOccurrences(of: "\r", with: " ")
+                    .replacingOccurrences(of: "  ", with: " ")
+            }
+            
+            translatedTexts.append(contentsOf: cleanedTranslations)
+        }
+        
+        return translatedTexts
+    }
+    
+    /// 生成翻译提示
+    private func generateTranslationPrompt(texts: [String], targetLanguage: String) -> String {
+        let numberedTexts = texts.enumerated().map { index, text in
+            "\(index + 1). \(text)"
+        }.joined(separator: "\n")
+        
+        return """
+        请将以下文本翻译成\(targetLanguage)语言。
+        只需返回翻译结果，每行一个翻译，保持原有的编号顺序：
+        
+        \(numberedTexts)
+        """
+    }
+    
+    /// 解析翻译结果
+    private func parseTranslations(from response: String) -> [String] {
+        // 移除可能的序号和额外标记
+        let lines = response
+            .components(separatedBy: .newlines)
+            .map { line -> String in
+                var cleaned = line
+                    .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                    .replacingOccurrences(of: "^\\d+\\.\\s*", with: "", options: .regularExpression)
+                    .replacingOccurrences(of: "^-\\s*", with: "", options: .regularExpression)
+                
+                // 如果翻译文本被引号包围，移除引号
+                if cleaned.hasPrefix("\"") && cleaned.hasSuffix("\"") {
+                    cleaned = String(cleaned.dropFirst().dropLast())
+                }
+                
+                return cleaned
+            }
+            .filter { !$0.isEmpty }
+        
+        return lines
     }
     
     // 原有的 DeepSeek 翻译方法
