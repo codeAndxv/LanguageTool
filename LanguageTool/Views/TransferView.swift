@@ -26,40 +26,28 @@ struct TransferView: View {
         panel.canChooseFiles = true
         
         // 根据选择的平台设置允许的文件类型
-        var allowedTypes: [UTType] = []
-        
         switch selectedPlatform {
+        case .electron:
+            // 对于 Electron 平台，使用 UTType.json
+            panel.allowedContentTypes = [.json]
+            panel.allowsOtherFileTypes = false
+            
         case .iOS:
             // 使用文件扩展名来识别文件类型
+            var allowedTypes: [UTType] = []
             if let xcstringsType = UTType(filenameExtension: "xcstrings") {
                 allowedTypes.append(xcstringsType)
             }
             if let stringsType = UTType(filenameExtension: "strings") {
                 allowedTypes.append(stringsType)
             }
-            
-//            // 支持 .json、.xcstrings 和 .strings 文件
-//            let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
-//            let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
-//            panel.allowedContentTypes = [.json, xcstringsType, stringsType]
+            panel.allowedContentTypes = allowedTypes
             
         case .flutter:
             if let arbType = UTType(filenameExtension: "arb") {
-                allowedTypes.append(arbType)
+                panel.allowedContentTypes = [arbType]
             }
-            
-        case .electron:
-            // 只允许纯 JSON 文件
-            allowedTypes = [UTType.json]  // 使用系统预定义的 JSON 类型
         }
-        
-        // 确保至少有一个文件类型被设置
-        if allowedTypes.isEmpty {
-            print("警告：没有设置任何文件类型")
-            allowedTypes = [.json]  // 默认使用 JSON 类型
-        }
-        
-        panel.allowedContentTypes = allowedTypes
         
         // 根据平台设置提示信息
         panel.title = "选择本地化文件"
@@ -74,16 +62,13 @@ struct TransferView: View {
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
-                // 关键修改 2: 校验文件扩展名
-                switch selectedPlatform {
-                case .electron:
+                // 关键修复 2: 强制二次验证扩展名
+                if selectedPlatform == .electron {
                     let fileExtension = fileURL.pathExtension.lowercased()
                     guard fileExtension == "json" else {
-                        // 显示错误提示
-                        self.showErrorAlert(message: "Electron 平台仅支持 .json 文件")
+                        showErrorAlert(message: "必须选择 .json 文件")
                         return
                     }
-                default: break
                 }
                 
                 self.inputPath = fileURL.path
@@ -193,12 +178,6 @@ struct TransferView: View {
             }
         }
     }
-    
-//    private func performConversion() {
-//        let result = JsonUtils.extractChineseKeysToFile(from: inputPath, to: outputPath)
-//        conversionResult = result.message
-//        showResult = true
-//    }
     
     private func convertToLocalization() {
         Task {
@@ -383,29 +362,9 @@ struct TransferView: View {
                             .background(Color.gray.opacity(0.1))
                             .cornerRadius(8)
                         }
-                        
-                        // 输出格式选择部分
-//                        VStack(alignment: .leading, spacing: 10) {
-//                            Text("输出格式")
-//                                .font(.headline)
-//                            
-//                            Picker("输出格式", selection: $outputFormat) {
-//                                Text("Xcode Strings Catalog (.xcstrings)")
-//                                    .tag(LocalizationFormat.xcstrings)
-//                                Text("Strings File (.strings)")
-//                                    .tag(LocalizationFormat.strings)
-//                            }
-//                            .pickerStyle(.radioGroup)
-//                            .onChange(of: outputFormat) { oldValue, newValue in
-//                                // 每次切换格式时都重置输出路径
-//                                outputPath = "未选择保存位置"
-//                                isOutputSelected = false
-//                            }
-//                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     
-                    // 按钮部分保持原样（居中）
                     HStack(spacing: 12) {
                         Button("开始转换") {
                             convertToLocalization()
@@ -518,3 +477,4 @@ struct LanguageToggle: View {
         .cornerRadius(8)
     }
 }
+
