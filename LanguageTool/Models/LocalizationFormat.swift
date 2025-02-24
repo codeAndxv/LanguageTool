@@ -6,4 +6,6 @@ enum LocalizationFormat {
     case xcstrings
     /// Strings File (.strings)
     case strings
+    /// Flutter ARB File (.arb)
+    case arb
 } 

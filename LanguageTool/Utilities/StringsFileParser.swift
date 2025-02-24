@@ -201,6 +201,5 @@ class StringsFileParser {
         } catch {
             return .failure(error)
         }
-        return .success("✅ 转换成功！")
     }
 } 

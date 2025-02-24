@@ -24,14 +24,14 @@ struct TransferView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         
-        // 支持 .json、.xcstrings 和 .strings 文件
-        let xcstringsType = UTType("com.apple.xcode.strings-text")! // Xcode 的 .xcstrings 类型
-        let stringsType = UTType.propertyList // .strings 文件实际上是属性列表类型
-        panel.allowedContentTypes = [.json, xcstringsType, stringsType]
+        // 添加 .arb 文件类型支持
+        let arbType = UTType(filenameExtension: "arb")!
+        let xcstringsType = UTType("com.apple.xcode.strings-text")!
+        let stringsType = UTType.propertyList
+        panel.allowedContentTypes = [.json, xcstringsType, stringsType, arbType]
         
-        // 设置文件类型描述
         panel.title = "选择本地化文件"
-        panel.message = "请选择 JSON、Localizable.xcstrings 或 Localizable.strings 文件"
+        panel.message = "请选择 JSON、Localizable.xcstrings、Localizable.strings 或 ARB 文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
@@ -40,21 +40,45 @@ struct TransferView: View {
                 
                 // 根据输入文件类型自动设置输出格式
                 let fileExtension = fileURL.pathExtension.lowercased()
-                if fileExtension == "strings" {
+                switch fileExtension {
+                case "strings":
                     self.outputFormat = .strings
-                    // 重置输出路径，因为格式改变了
-                    self.outputPath = "未选择保存位置"
-                    self.isOutputSelected = false
-                } else {
+                case "arb":
+                    self.outputFormat = .arb  // 新增 .arb 格式
+                default:
                     self.outputFormat = .xcstrings
                 }
+                
+                // 重置输出路径
+                self.outputPath = "未选择保存位置"
+                self.isOutputSelected = false
             }
         }
     }
     
     private func selectOutputPath() {
-        // 对于 .strings 格式，使用目录选择面板
-        if outputFormat == .strings {
+        switch outputFormat {
+        case .arb:
+            // 对于 ARB 格式，使用目录选择面板
+            let openPanel = NSOpenPanel()
+            openPanel.canChooseFiles = false
+            openPanel.canChooseDirectories = true
+            openPanel.allowsMultipleSelection = false
+            openPanel.message = "请选择保存 ARB 文件的目录"
+            openPanel.prompt = "选择"
+            openPanel.title = "选择保存目录"
+            
+            openPanel.treatsFilePackagesAsDirectories = true
+            
+            openPanel.begin { [self] response in
+                if response == .OK, let directoryURL = openPanel.url {
+                    self.outputPath = directoryURL.path
+                    self.isOutputSelected = true
+                }
+            }
+            
+        case .strings:
+            // 现有的 .strings 格式处理逻辑
             let openPanel = NSOpenPanel()
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
@@ -72,8 +96,9 @@ struct TransferView: View {
                     self.isOutputSelected = true
                 }
             }
-        } else {
-            // .xcstrings 文件的保存逻辑
+            
+        case .xcstrings:
+            // 现有的 .xcstrings 格式处理逻辑
             let panel = NSSavePanel()
             if let xcstringsType = UTType(filenameExtension: "xcstrings") {
                 panel.allowedContentTypes = [xcstringsType]
@@ -99,11 +124,11 @@ struct TransferView: View {
         }
     }
     
-    private func performConversion() {
-        let result = JsonUtils.extractChineseKeysToFile(from: inputPath, to: outputPath)
-        conversionResult = result.message
-        showResult = true
-    }
+//    private func performConversion() {
+//        let result = JsonUtils.extractChineseKeysToFile(from: inputPath, to: outputPath)
+//        conversionResult = result.message
+//        showResult = true
+//    }
     
     private func convertToLocalization() {
         Task {
@@ -115,6 +140,20 @@ struct TransferView: View {
             let result: (message: String, success: Bool)
             
             switch fileExtension {
+            case "arb":
+                let processResult = await ARBFileHandler.processARBFile(
+                    from: inputPath,
+                    to: outputPath,
+                    languages: Array(selectedLanguages).map { $0.code }
+                )
+                
+                switch processResult {
+                case .success(let message):
+                    result = (message: message, success: true)
+                case .failure(let error):
+                    result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
+                }
+                
             case "strings":
                 let processResult = await StringsFileParser.processStringsFile(
                     from: inputPath,
@@ -130,12 +169,16 @@ struct TransferView: View {
                     result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
                 }
                 
-            default:
-                result = await JsonUtils.convertToLocalizationFile(
+            case "json", "xcstrings":
+                let conversionResult = await JsonUtils.convertToLocalizationFile(
                     from: inputPath,
                     to: outputPath,
                     languages: Array(selectedLanguages).map { $0.code }
                 )
+                result = (message: conversionResult.message, success: conversionResult.success)
+                
+            default:
+                result = (message: "❌ 不支持的文件格式", success: false)
             }
             
             DispatchQueue.main.async {
