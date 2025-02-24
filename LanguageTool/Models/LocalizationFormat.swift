@@ -8,4 +8,6 @@ enum LocalizationFormat {
     case strings
     /// Flutter ARB File (.arb)
     case arb
+    /// Electron JSON File (.json)
+    case electron
 } 

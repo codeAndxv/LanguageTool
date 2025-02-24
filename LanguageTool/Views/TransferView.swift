@@ -13,6 +13,7 @@ struct TransferView: View {
     @State private var isLoading: Bool = false
     @State private var showSuccessActions: Bool = false
     @State private var outputFormat: LocalizationFormat = .xcstrings
+    @State private var selectedPlatform: PlatformType = .iOS
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -24,29 +25,40 @@ struct TransferView: View {
         panel.canChooseDirectories = false
         panel.canChooseFiles = true
         
-        // 添加 .arb 文件类型支持
-        let arbType = UTType(filenameExtension: "arb")!
-        let xcstringsType = UTType("com.apple.xcode.strings-text")!
-        let stringsType = UTType.propertyList
-        panel.allowedContentTypes = [.json, xcstringsType, stringsType, arbType]
+        // 根据选择的平台设置允许的文件类型
+        var allowedTypes: [UTType] = []
+        
+        switch selectedPlatform {
+        case .iOS:
+            let xcstringsType = UTType("com.apple.xcode.strings-text")!
+            let stringsType = UTType.propertyList
+            allowedTypes = [xcstringsType, stringsType]
+        case .flutter:
+            let arbType = UTType(filenameExtension: "arb")!
+            allowedTypes = [arbType]
+        case .electron:
+            allowedTypes = [.json]
+        }
+        
+        panel.allowedContentTypes = allowedTypes
         
         panel.title = "选择本地化文件"
-        panel.message = "请选择 JSON、Localizable.xcstrings、Localizable.strings 或 ARB 文件"
+        panel.message = "请选择 \(selectedPlatform.description) 文件"
         
         panel.begin { response in
             if response == .OK, let fileURL = panel.url {
                 self.inputPath = fileURL.path
                 self.isInputSelected = true
                 
-                // 根据输入文件类型自动设置输出格式
-                let fileExtension = fileURL.pathExtension.lowercased()
-                switch fileExtension {
-                case "strings":
-                    self.outputFormat = .strings
-                case "arb":
-                    self.outputFormat = .arb  // 新增 .arb 格式
-                default:
-                    self.outputFormat = .xcstrings
+                // 根据选择的平台设置输出格式
+                switch selectedPlatform {
+                case .iOS:
+                    let fileExtension = fileURL.pathExtension.lowercased()
+                    self.outputFormat = fileExtension == "strings" ? .strings : .xcstrings
+                case .flutter:
+                    self.outputFormat = .arb
+                case .electron:
+                    self.outputFormat = .electron  // 新增 .electron 格式
                 }
                 
                 // 重置输出路径
@@ -58,6 +70,25 @@ struct TransferView: View {
     
     private func selectOutputPath() {
         switch outputFormat {
+        case .electron:
+            // 对于 Electron 格式，使用目录选择面板
+            let openPanel = NSOpenPanel()
+            openPanel.canChooseFiles = false
+            openPanel.canChooseDirectories = true
+            openPanel.allowsMultipleSelection = false
+            openPanel.message = "请选择保存 JSON 文件的目录"
+            openPanel.prompt = "选择"
+            openPanel.title = "选择保存目录"
+            
+            openPanel.treatsFilePackagesAsDirectories = true
+            
+            openPanel.begin { [self] response in
+                if response == .OK, let directoryURL = openPanel.url {
+                    self.outputPath = directoryURL.path
+                    self.isOutputSelected = true
+                }
+            }
+            
         case .arb:
             // 对于 ARB 格式，使用目录选择面板
             let openPanel = NSOpenPanel()
@@ -139,14 +170,39 @@ struct TransferView: View {
             let fileExtension = (inputPath as NSString).pathExtension.lowercased()
             let result: (message: String, success: Bool)
             
-            switch fileExtension {
-            case "arb":
+            switch selectedPlatform {
+            case .iOS:
+                switch fileExtension {
+                case "strings":
+                    let processResult = await StringsFileParser.processStringsFile(
+                        from: inputPath,
+                        to: outputPath,
+                        format: outputFormat,
+                        languages: selectedLanguages
+                    )
+                    switch processResult {
+                    case .success(let message):
+                        result = (message: message, success: true)
+                    case .failure(let error):
+                        result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
+                    }
+                case "xcstrings":
+                    let conversionResult = await JsonUtils.convertToLocalizationFile(
+                        from: inputPath,
+                        to: outputPath,
+                        languages: Array(selectedLanguages).map { $0.code }
+                    )
+                    result = (message: conversionResult.message, success: conversionResult.success)
+                default:
+                    result = (message: "❌ 不支持的文件格式", success: false)
+                }
+                
+            case .flutter:
                 let processResult = await ARBFileHandler.processARBFile(
                     from: inputPath,
                     to: outputPath,
                     languages: Array(selectedLanguages).map { $0.code }
                 )
-                
                 switch processResult {
                 case .success(let message):
                     result = (message: message, success: true)
@@ -154,31 +210,18 @@ struct TransferView: View {
                     result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
                 }
                 
-            case "strings":
-                let processResult = await StringsFileParser.processStringsFile(
-                    from: inputPath,
-                    to: outputPath,
-                    format: outputFormat,
-                    languages: selectedLanguages
-                )
-                
-                switch processResult {
-                case .success(let message):
-                    result = (message: message, success: true)
-                case .failure(let error):
-                    result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
-                }
-                
-            case "json", "xcstrings":
-                let conversionResult = await JsonUtils.convertToLocalizationFile(
+            case .electron:
+                let processResult = await ElectronLocalizationHandler.processLocalizationFile(
                     from: inputPath,
                     to: outputPath,
                     languages: Array(selectedLanguages).map { $0.code }
                 )
-                result = (message: conversionResult.message, success: conversionResult.success)
-                
-            default:
-                result = (message: "❌ 不支持的文件格式", success: false)
+                switch processResult {
+                case .success(let message):
+                    result = (message: message, success: true)
+                case .failure(let error):
+                    result = (message: "❌ 转换失败：\(error.localizedDescription)", success: false)
+                }
             }
             
             DispatchQueue.main.async {
@@ -216,9 +259,28 @@ struct TransferView: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // 左对齐的内容容器
+                    // 添加平台选择部分
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("选择平台")
+                            .font(.headline)
+                        
+                        Picker("平台", selection: $selectedPlatform) {
+                            ForEach(PlatformType.allCases, id: \.self) { platform in
+                                Text(platform.description)
+                                    .tag(platform)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .onChange(of: selectedPlatform) { oldValue, newValue in
+                            // 切换平台时重置状态
+                            resetAll()
+                        }
+                    }
+                    .padding(.bottom, 10)
+                    
+                    // 文件选择部分
                     VStack(alignment: .leading, spacing: 20) {
-                        // 文件选择部分
+                        // 左对齐的内容容器
                         VStack(alignment: .leading, spacing: 10) {
                             Button("选择读取文件") {
                                 selectInputFile()
