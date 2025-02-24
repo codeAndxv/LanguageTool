@@ -26,8 +26,8 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 1. 启动应用程序![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/2pmTBE20250213230424.png)
 2. 在设置中配置 AI 服务的 API Key
-   ![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/66zhle20250213230536.png)
-3. 选择源文件（JSON 或 .xcstrings）
+   ![](https://raw.githubusercontent.com/aSynch1889/image/master/uPic/xTfNrr20250224113359.png)
+3. 选择源文件（Localizable.xcstrings 或 Localizable.strings 文件）
 4. 选择目标语言
 5. 选择保存位置
 6. 点击"开始转换"
@@ -74,7 +74,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 注意事项
 
-- 使用前需要配置有效的 DeepSeek AI 服务 API Key
+- 使用前需要配置有效的 DeepSeek AI 或者 Gemini 服务 API Key
 - 建议在使用前备份原有的本地化文件
 - 翻译结果可能需要人工审核以确保准确性
 
@@ -88,7 +88,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成 Xcode 项目�
 
 ## 致谢
 
-- DeepSeek AI 提供翻译服务
+- DeepSeek AI、Gemini 提供翻译服务
 - SwiftUI 框架
 - 所有贡献者和用户
 
