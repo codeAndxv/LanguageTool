@@ -3,8 +3,8 @@ import AppKit
 import UniformTypeIdentifiers
 
 struct TransferView: View {
-    @State private var inputPath: String = "未选择文件"
-    @State private var outputPath: String = "未选择保存位置"
+    @State private var inputPath: String = "未选择文件".localized
+    @State private var outputPath: String = "未选择保存位置".localized
     @State private var isInputSelected: Bool = false
     @State private var isOutputSelected: Bool = false
     @State private var conversionResult: String = ""

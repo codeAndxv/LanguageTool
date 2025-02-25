@@ -348,8 +348,22 @@
     "Gemini API Key" : {
 
     },
+    "Key" : {
+      "extractionState" : "manual"
+    },
     "Language Tool" : {
 
+    },
+    "保存本地化文件" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存本地化文件"
+          }
+        }
+      }
     },
     "其他设置" : {
       "extractionState" : "stale",
@@ -2396,6 +2410,17 @@
         }
       }
     },
+    "文件类型错误" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文件类型错误"
+          }
+        }
+      }
+    },
     "更多设置项开发中..." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -2733,6 +2758,17 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : ""
+          }
+        }
+      }
+    },
+    "未选择保存位置" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未选择保存位置"
           }
         }
       }
@@ -3760,6 +3796,39 @@
         }
       }
     },
+    "请选择保存 ARB 文件的目录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存 ARB 文件的目录"
+          }
+        }
+      }
+    },
+    "请选择保存 JSON 文件的目录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存 JSON 文件的目录"
+          }
+        }
+      }
+    },
+    "请选择保存语言文件的目录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存语言文件的目录"
+          }
+        }
+      }
+    },
     "输入消息" : {
       "localizations" : {
         "ar" : {
@@ -4096,6 +4165,39 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : ""
+          }
+        }
+      }
+    },
+    "选择" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择"
+          }
+        }
+      }
+    },
+    "选择保存 .xcstrings 文件的位置" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择保存 .xcstrings 文件的位置"
+          }
+        }
+      }
+    },
+    "选择保存目录" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择保存目录"
           }
         }
       }
