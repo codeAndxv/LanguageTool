@@ -7,8 +7,8 @@ struct SettingsView: View {
     @AppStorage("appLanguage") private var appLanguage: String = "en"  // 默认为英语
     
     private let supportedLanguages = [
-        ("en", "English"),
-        ("zh-Hans", "简体中文")
+        ("en", "English".localized),
+        ("zh-Hans", "Simplified Chinese".localized)
     ]
     
     // 添加语言切换通知
