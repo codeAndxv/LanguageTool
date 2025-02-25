@@ -14,6 +14,7 @@ struct TransferView: View {
     @State private var showSuccessActions: Bool = false
     @State private var outputFormat: LocalizationFormat = .xcstrings
     @State private var selectedPlatform: PlatformType = .iOS
+    @State private var languageChanged = false  // 添加语言变更状态
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -470,6 +471,11 @@ struct TransferView: View {
             }
         }
         .allowsHitTesting(!isLoading)
+        .id(languageChanged)  // 添加 id 以强制视图刷新
+        .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+            // 接收到语言变更通知时，触发视图刷新
+            languageChanged.toggle()
+        }
     }
 }
 
