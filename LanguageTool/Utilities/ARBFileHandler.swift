@@ -182,7 +182,7 @@ class ARBFileHandler {
                 print("✅ 已生成 \(language) 的 ARB 文件")
             }
             
-            return .success("✅ 成功生成所有语言的 ARB 文件")
+            return .success("Successfully generated ARB files for all languages".localized)
         } catch {
             return .failure(error)
         }

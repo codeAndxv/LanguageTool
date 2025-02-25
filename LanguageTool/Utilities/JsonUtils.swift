@@ -130,7 +130,7 @@ class JsonUtils {
         
         do {
             try jsonData.write(to: URL(fileURLWithPath: outputPath))
-            return (true, "✅ 成功生成本地化 JSON 文件，包含 \(extractedData.values.count) 个翻译项")
+            return (true, "Successfully generated localized JSON file containing \(extractedData.values.count) translation items".localized)
         } catch {
             return (false, "❌ 写入文件失败: \(error.localizedDescription)")
         }

@@ -84,7 +84,7 @@ class ElectronLocalizationHandler {
                 print("✅ 已生成 \(language) 的本地化文件")
             }
             
-            return .success("✅ 成功生成所有语言的本地化文件")
+            return .success("Successfully generated localized files for all languages".localized)
         } catch {
             return .failure(error)
         }

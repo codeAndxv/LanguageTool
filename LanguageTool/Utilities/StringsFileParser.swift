@@ -137,7 +137,7 @@ class StringsFileParser {
                     switch xcstringsResult {
                     case .success(let data):
                         try data.write(to: URL(fileURLWithPath: outputPath))
-                        return .success("✅ 转换成功！")
+                        return .success("Conversion successful!".localized)
                     case .failure(let error):
                         return .failure(error)
                     }
@@ -193,7 +193,7 @@ class StringsFileParser {
                             }
                         }
                     }
-                    return .success("✅ 转换成功！")
+                    return .success("Conversion successful!".localized)
                 }
             case .failure(let error):
                 return .failure(error)

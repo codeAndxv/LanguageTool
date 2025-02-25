@@ -30,6 +30,17 @@
         }
       }
     },
+    "Conversion successful!" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversion successful!"
+          }
+        }
+      }
+    },
     "DeepSeek API Key" : {
 
     },
@@ -934,6 +945,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "开始转换"
+          }
+        }
+      }
+    },
+    "Successfully generated ARB files for all languages" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Successfully generated ARB files for all languages"
+          }
+        }
+      }
+    },
+    "Successfully generated localized files for all languages" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Successfully generated localized files for all languages"
+          }
+        }
+      }
+    },
+    "Successfully generated localized JSON file containing %@ translation items" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Successfully generated localized JSON file containing %@ translation items"
           }
         }
       }
