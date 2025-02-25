@@ -294,10 +294,10 @@ struct TransferView: View {
                 VStack(spacing: 20) {
                     // 添加平台选择部分
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("选择平台")
+                        Text("选择平台".localized)
                             .font(.headline)
                         
-                        Picker("平台", selection: $selectedPlatform) {
+                        Picker("平台".localized, selection: $selectedPlatform) {
                             ForEach(PlatformType.allCases, id: \.self) { platform in
                                 Text(platform.description)
                                     .tag(platform)
@@ -315,7 +315,7 @@ struct TransferView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         // 左对齐的内容容器
                         VStack(alignment: .leading, spacing: 10) {
-                            Button("选择读取文件") {
+                            Button("选择读取文件".localized) {
                                 selectInputFile()
                             }
                             Text(inputPath)
@@ -326,7 +326,7 @@ struct TransferView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 10) {
-                            Button("选择保存路径") {
+                            Button("选择保存路径".localized) {
                                 selectOutputPath()
                             }
                             Text(outputPath)
@@ -338,8 +338,27 @@ struct TransferView: View {
                         
                         // 语言选择部分
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("选择目标语言")
-                                .font(.headline)
+                            HStack {
+                                Text("选择目标语言")
+                                    .font(.headline)
+                                
+                                Spacer()
+                                
+                                // 添加全选按钮
+                                Button(action: {
+                                    if selectedLanguages.count == Language.supportedLanguages.count {
+                                        // 如果已经全选，则只保留第一个语言
+                                        selectedLanguages = [Language.supportedLanguages[0]]
+                                    } else {
+                                        // 否则全选
+                                        selectedLanguages = Set(Language.supportedLanguages)
+                                    }
+                                }) {
+                                    Text(selectedLanguages.count == Language.supportedLanguages.count ? "取消全选".localized : "全选".localized)
+                                        .font(.subheadline)
+                                }
+                                .buttonStyle(.borderless)
+                            }
                             
                             ScrollView {
                                 LazyVGrid(columns: columns, spacing: 10) {
@@ -366,7 +385,7 @@ struct TransferView: View {
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     
                     HStack(spacing: 12) {
-                        Button("开始转换") {
+                        Button("开始转换".localized) {
                             convertToLocalization()
                         }
                         .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
@@ -375,7 +394,7 @@ struct TransferView: View {
                         Button(action: resetAll) {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.counterclockwise")
-                                Text("重置")
+                                Text("重置".localized)
                             }
                         }
                         .buttonStyle(.bordered)
@@ -391,7 +410,7 @@ struct TransferView: View {
                             
                             if showSuccessActions {
                                 VStack(spacing: 8) {
-                                    Text("文件保存路径：")
+                                    Text("文件保存路径：".localized)
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                     
@@ -405,7 +424,7 @@ struct TransferView: View {
                                     Button(action: openInFinder) {
                                         HStack {
                                             Image(systemName: "folder")
-                                            Text("在 Finder 中显示")
+                                            Text("在 Finder 中显示".localized)
                                         }
                                     }
                                     .buttonStyle(.borderless)
@@ -436,9 +455,9 @@ struct TransferView: View {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("正在翻译中...")
+                    Text("正在翻译中...".localized)
                         .font(.headline)
-                    Text("请耐心等待，这可能需要一些时间")
+                    Text("请耐心等待，这可能需要一些时间".localized)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }

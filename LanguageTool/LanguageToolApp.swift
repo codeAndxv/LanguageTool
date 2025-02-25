@@ -6,11 +6,11 @@ struct LanguageToolApp: App {
     init() {
         // 读取保存的语言设置
         if let savedLanguage = UserDefaults.standard.string(forKey: "appLanguage") {
-            UserDefaults.standard.set([savedLanguage], forKey: "AppleLanguages")
+            LocalizationManager.shared.setLanguage(savedLanguage)
         } else {
             // 默认设置为英语
-            UserDefaults.standard.set(["en"], forKey: "AppleLanguages")
             UserDefaults.standard.set("en", forKey: "appLanguage")
+            LocalizationManager.shared.setLanguage("en")
         }
     }
 
@@ -29,6 +29,12 @@ struct LanguageToolApp: App {
         WindowGroup {
             ContentView()
                 .modelContainer(sharedModelContainer)
+                .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
+                    // 当语言改变时，更新本地化管理器
+                    if let language = UserDefaults.standard.string(forKey: "appLanguage") {
+                        LocalizationManager.shared.setLanguage(language)
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar) // 隐藏默认标题栏
         .defaultSize(width: 600, height: 600) // 设置默认窗口大小

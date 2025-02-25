@@ -2,6 +2,7 @@
   "sourceLanguage" : "zh-Hans",
   "strings" : {
     "API 设置" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -20,19 +21,11 @@
     "Interface Language" : {
 
     },
-    "Language Setting Changed" : {
-
-    },
     "Language Tool" : {
 
     },
-    "OK" : {
-
-    },
-    "Please restart the app to apply the new language setting" : {
-
-    },
     "其他设置" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -53,6 +46,7 @@
       }
     },
     "在 Finder 中显示" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -63,6 +57,7 @@
       }
     },
     "平台" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -73,6 +68,7 @@
       }
     },
     "开始转换" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -83,6 +79,7 @@
       }
     },
     "文件保存路径：" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -93,6 +90,7 @@
       }
     },
     "更多设置项开发中..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -103,6 +101,7 @@
       }
     },
     "正在翻译中..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -113,6 +112,7 @@
       }
     },
     "翻译服务" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -122,10 +122,8 @@
         }
       }
     },
-    "语言设置" : {
-
-    },
     "请耐心等待，这可能需要一些时间" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -146,6 +144,7 @@
       }
     },
     "选择保存路径" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -156,6 +155,7 @@
       }
     },
     "选择平台" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -176,6 +176,7 @@
       }
     },
     "选择读取文件" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
@@ -186,6 +187,7 @@
       }
     },
     "重置" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {

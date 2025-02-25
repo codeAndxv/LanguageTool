@@ -11,11 +11,14 @@ struct SettingsView: View {
         ("zh-Hans", "简体中文")
     ]
     
+    // 添加语言切换通知
+    @State private var languageChanged = false
+    
     var body: some View {
         Form {
-            Section(header: Text("API 设置")) {
+            Section(header: Text("API 设置".localized)) {
                 // AI 服务选择
-                Picker("翻译服务", selection: $selectedService) {
+                Picker("翻译服务".localized, selection: $selectedService) {
                     ForEach(AIServiceType.allCases, id: \.self) { service in
                         Text(service.rawValue).tag(service)
                     }
@@ -35,26 +38,25 @@ struct SettingsView: View {
                 }
             }
             
-            Section(header: Text("语言设置")) {
-                // 语言选择
-                Picker("Interface Language", selection: $appLanguage) {
+            Section(header: Text("语言设置".localized)) {
+                Picker("界面语言".localized, selection: $appLanguage) {
                     ForEach(supportedLanguages, id: \.0) { code, name in
                         Text(name).tag(code)
                     }
                 }
                 .onChange(of: appLanguage) { oldValue, newValue in
-                    // 提示用户需要重启应用
-                    let alert = NSAlert()
-                    alert.messageText = String(localized: "Language Setting Changed")
-                    alert.informativeText = String(localized: "Please restart the app to apply the new language setting")
-                    alert.alertStyle = .informational
-                    alert.addButton(withTitle: String(localized: "OK"))
-                    alert.runModal()
+                    // 更新语言设置
+                    UserDefaults.standard.set([newValue], forKey: "AppleLanguages")
+                    UserDefaults.standard.synchronize()
+                    
+                    // 发送语言变更通知
+                    NotificationCenter.default.post(name: .languageChanged, object: nil)
+                    languageChanged.toggle()
                 }
             }
             
-            Section("其他设置") {
-                Text("更多设置项开发中...")
+            Section("其他设置".localized) {
+                Text("更多设置项开发中...".localized)
                     .foregroundColor(.secondary)
             }
         }
@@ -62,5 +64,11 @@ struct SettingsView: View {
         .padding(.horizontal, 20)
         .frame(width: 400)
         .frame(minHeight: 200)
+        .id(languageChanged) // 强制视图刷新
     }
+}
+
+// 添加语言变更通知名称
+extension Notification.Name {
+    static let languageChanged = Notification.Name("com.app.languageChanged")
 } 
