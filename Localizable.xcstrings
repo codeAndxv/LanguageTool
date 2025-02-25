@@ -354,6 +354,193 @@
     "Language Tool" : {
 
     },
+    "Please select .arb file" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select .arb file"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择 .arb 文件"
+          }
+        }
+      }
+    },
+    "Please select .json file" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select .json file"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择 .json 文件"
+          }
+        }
+      }
+    },
+    "Please select .strings or .xcstrings file" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please select .strings or .xcstrings file"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择 .strings 或 .xcstrings 文件"
+          }
+        }
+      }
+    },
+    "Save Localization File" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save Localization File"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存本地化文件"
+          }
+        }
+      }
+    },
+    "Select" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择"
+          }
+        }
+      }
+    },
+    "Select directory for ARB files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select directory for ARB files"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存 ARB 文件的目录"
+          }
+        }
+      }
+    },
+    "Select directory for JSON files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select directory for JSON files"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存 JSON 文件的目录"
+          }
+        }
+      }
+    },
+    "Select directory for language files" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select directory for language files"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择保存语言文件的目录"
+          }
+        }
+      }
+    },
+    "Select Localization File" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Localization File"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择本地化文件"
+          }
+        }
+      }
+    },
+    "Select location to save .xcstrings file" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select location to save .xcstrings file"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择保存 .xcstrings 文件的位置"
+          }
+        }
+      }
+    },
+    "Select Save Directory" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select Save Directory"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择保存目录"
+          }
+        }
+      }
+    },
     "保存本地化文件" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -364,6 +551,9 @@
           }
         }
       }
+    },
+    "全选" : {
+
     },
     "其他设置" : {
       "extractionState" : "stale",
@@ -1045,6 +1235,9 @@
           }
         }
       }
+    },
+    "取消全选" : {
+
     },
     "在 Finder 中显示" : {
       "extractionState" : "stale",
@@ -2769,6 +2962,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未选择保存位置"
+          }
+        }
+      }
+    },
+    "未选择文件" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No file selected"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未选择文件"
           }
         }
       }
@@ -5260,7 +5470,6 @@
       }
     },
     "选择读取文件" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

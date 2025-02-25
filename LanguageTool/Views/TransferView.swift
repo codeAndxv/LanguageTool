@@ -3,8 +3,8 @@ import AppKit
 import UniformTypeIdentifiers
 
 struct TransferView: View {
-    @State private var inputPath: String = "未选择文件".localized
-    @State private var outputPath: String = "未选择保存位置".localized
+    @State private var inputPath = "未选择文件"
+    @State private var outputPath = "未选择保存位置"
     @State private var isInputSelected: Bool = false
     @State private var isOutputSelected: Bool = false
     @State private var conversionResult: String = ""
@@ -50,14 +50,14 @@ struct TransferView: View {
         }
         
         // 根据平台设置提示信息
-        panel.title = "选择本地化文件".localized
+        panel.title = "Select Localization File"
         switch selectedPlatform {
         case .iOS:
-            panel.message = "请选择 .strings 或 .xcstrings 文件".localized
+            panel.message = "Please select .strings or .xcstrings file"
         case .flutter:
-            panel.message = "请选择 .arb 文件".localized
+            panel.message = "Please select .arb file"
         case .electron:
-            panel.message = "请选择 .json 文件".localized
+            panel.message = "Please select .json file"
         }
         
         panel.begin { response in
@@ -100,9 +100,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存 JSON 文件的目录".localized
-            openPanel.prompt = "选择".localized
-            openPanel.title = "选择保存目录".localized
+            openPanel.message = "Select directory for JSON files"
+            openPanel.prompt = "Select"
+            openPanel.title = "Select Save Directory"
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -119,9 +119,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存 ARB 文件的目录".localized
-            openPanel.prompt = "选择".localized
-            openPanel.title = "选择保存目录".localized
+            openPanel.message = "Select directory for ARB files"
+            openPanel.prompt = "Select"
+            openPanel.title = "Select Save Directory"
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -138,9 +138,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存语言文件的目录".localized
-            openPanel.prompt = "选择".localized
-            openPanel.title = "选择保存目录".localized
+            openPanel.message = "Select directory for language files"
+            openPanel.prompt = "Select"
+            openPanel.title = "Select Save Directory"
             
             // 设置可以访问的目录类型
             openPanel.treatsFilePackagesAsDirectories = true
@@ -167,8 +167,8 @@ struct TransferView: View {
             panel.nameFieldStringValue = defaultFileName
             
             panel.canCreateDirectories = true
-            panel.title = "保存本地化文件".localized
-            panel.message = "选择保存 .xcstrings 文件的位置".localized
+            panel.title = "Save Localization File"
+            panel.message = "Select location to save .xcstrings file"
             
             panel.begin { [self] response in
                 if response == .OK, let fileURL = panel.url {
@@ -263,8 +263,8 @@ struct TransferView: View {
     private func resetAll() {
         withAnimation(.smooth(duration: 0.3)) {
             // 重置文件路径
-            inputPath = "未选择文件".localized
-            outputPath = "未选择保存位置".localized
+            inputPath = "未选择文件"
+            outputPath = "未选择保存位置"
             isInputSelected = false
             isOutputSelected = false
             
@@ -315,10 +315,10 @@ struct TransferView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         // 左对齐的内容容器
                         VStack(alignment: .leading, spacing: 10) {
-                            Button("选择读取文件".localized) {
+                            Button("选择读取文件") {
                                 selectInputFile()
                             }
-                            Text(inputPath)
+                            Text(inputPath.localized)
                                 .foregroundColor(.gray)
                                 .font(.system(.body, design: .monospaced))
                                 .lineLimit(1)
@@ -354,7 +354,7 @@ struct TransferView: View {
                                         selectedLanguages = Set(Language.supportedLanguages)
                                     }
                                 }) {
-                                    Text(selectedLanguages.count == Language.supportedLanguages.count ? "取消全选".localized : "全选".localized)
+                                    Text(selectedLanguages.count == Language.supportedLanguages.count ? "取消全选" : "全选")
                                         .font(.subheadline)
                                 }
                                 .buttonStyle(.borderless)
