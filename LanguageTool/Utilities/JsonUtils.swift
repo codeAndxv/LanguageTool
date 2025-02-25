@@ -82,19 +82,55 @@ class JsonUtils {
         }
     }
 
-    /// 从JSON文件中提取中文键并生成本地化文件
+    /// 从 JSON 文件中提取所有需要翻译的值和源语言
+    static func extractValuesFromXCStrings(from inputFilePath: String) -> (values: [String], sourceLanguage: String)? {
+        do {
+            guard let jsonData = try? Data(contentsOf: URL(fileURLWithPath: inputFilePath)),
+                  let jsonObject = try? JSONSerialization.jsonObject(with: jsonData, options: []) as? [String: Any],
+                  let strings = jsonObject["strings"] as? [String: Any],
+                  let sourceLanguage = jsonObject["sourceLanguage"] as? String else {
+                print("❌ JSON 文件读取或解析失败")
+                return nil
+            }
+
+            var values = Set<String>()
+
+            // 遍历 strings 下的所有条目
+            for (_, entry) in strings {
+                if let entryDict = entry as? [String: Any],
+                   let localizations = entryDict["localizations"] as? [String: Any],
+                   let sourceLocalization = localizations[sourceLanguage] as? [String: Any],
+                   let stringUnit = sourceLocalization["stringUnit"] as? [String: Any],
+                   let value = stringUnit["value"] as? String {
+                    values.insert(value)
+                }
+            }
+
+            print("✅ 成功提取 \(values.count) 个待翻译值")
+            return (Array(values), sourceLanguage)
+        } catch {
+            print("❌ 处理失败: \(error)")
+            return nil
+        }
+    }
+
+    /// 从JSON文件中提取值并生成本地化文件
     static func convertToLocalizationFile(from inputPath: String, to outputPath: String, languages: [String]) async -> (success: Bool, message: String) {
-        guard let chineseKeys = extractChineseKeysAsArray(from: inputPath) else {
-            return (false, "❌ 提取中文键失败")
+        guard let extractedData = extractValuesFromXCStrings(from: inputPath) else {
+            return (false, "❌ 提取待翻译值失败")
         }
         
-        guard let jsonData = await LocalizationJSONGenerator.generateJSON(for: chineseKeys, languages: languages) else {
+        guard let jsonData = await LocalizationJSONGenerator.generateJSON(
+            for: extractedData.values,
+            languages: languages,
+            sourceLanguage: extractedData.sourceLanguage
+        ) else {
             return (false, "❌ 生成 JSON 失败")
         }
         
         do {
             try jsonData.write(to: URL(fileURLWithPath: outputPath))
-            return (true, "✅ 成功生成本地化 JSON 文件，包含 \(chineseKeys.count) 个键")
+            return (true, "✅ 成功生成本地化 JSON 文件，包含 \(extractedData.values.count) 个翻译项")
         } catch {
             return (false, "❌ 写入文件失败: \(error.localizedDescription)")
         }

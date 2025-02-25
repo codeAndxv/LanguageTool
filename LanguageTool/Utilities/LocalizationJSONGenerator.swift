@@ -2,20 +2,10 @@ import Foundation
 import AppKit
 
 class LocalizationJSONGenerator {
-    static func generateJSON(for keys: [String], languages: [String] = ["zh-Hans", "en", "zh-Hant", "ja", "ko", "es", "fr", "de"]) async -> Data? {
-//        // 添加 API 测试
-//        do {
-//            print("正在测试 Gemini API 连接...")
-//            try await AIService.shared.testGemini()
-//            print("API 测试成功，继续生成 JSON...")
-//        } catch {
-//            print("Gemini API 测试失败: \(error.localizedDescription)")
-//            return nil
-//        }
-        
+    static func generateJSON(for keys: [String], languages: [String], sourceLanguage: String) async -> Data? {
         var localizationData: [String: Any] = [
             "version": "1.0",
-            "sourceLanguage": "zh-Hans",
+            "sourceLanguage": sourceLanguage,
             "strings": [:]
         ]
         
@@ -24,6 +14,7 @@ class LocalizationJSONGenerator {
         // 语言名称映射
         let languageNames = [
             "en": "英语",
+            "zh-Hans": "简体中文",
             "zh-Hant": "繁体中文",
             "ja": "日语",
             "ko": "韩语",
@@ -34,7 +25,7 @@ class LocalizationJSONGenerator {
         
         // 为每种语言批量翻译所有键
         for language in languages {
-            if language == "zh-Hans" {
+            if language == sourceLanguage {
                 // 源语言不需要翻译
                 for key in keys {
                     if stringsDict[key] == nil {

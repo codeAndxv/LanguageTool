@@ -144,8 +144,8 @@ class AIService {
         
         // 生成翻译提示
         let prompt = """
-        请将以下文本翻译成\(targetLanguage)语言。
-        每个文本之间使用 ||| 分隔，请保持这个分隔符：
+        请将以下文本翻译成\(targetLanguage)。
+        每个文本之间使用 ||| 分隔，请保持这个分隔符，只返回翻译结果：
         
         \(combinedText)
         """
@@ -171,9 +171,16 @@ class AIService {
             .replacingOccurrences(of: "\r", with: " ")
             .replacingOccurrences(of: "  ", with: " ")
         
-        return cleanedResponse.components(separatedBy: separator)
+        let translations = cleanedResponse.components(separatedBy: separator)
             .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        
+        // 确保翻译结果数量与原文本数量匹配
+        guard translations.count == texts.count else {
+            throw AIError.invalidResponse
+        }
+        
+        return translations
     }
     
     /// 生成翻译提示
