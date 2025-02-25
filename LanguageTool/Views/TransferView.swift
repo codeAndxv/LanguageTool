@@ -3,8 +3,8 @@ import AppKit
 import UniformTypeIdentifiers
 
 struct TransferView: View {
-    @State private var inputPath = "未选择文件"
-    @State private var outputPath = "未选择保存位置"
+    @State private var inputPath = "No file selected"
+    @State private var outputPath = "No save location selected"
     @State private var isInputSelected: Bool = false
     @State private var isOutputSelected: Bool = false
     @State private var conversionResult: String = ""
@@ -50,14 +50,14 @@ struct TransferView: View {
         }
         
         // 根据平台设置提示信息
-        panel.title = "Select Localization File"
+        panel.title = "Select Input File".localized
         switch selectedPlatform {
         case .iOS:
-            panel.message = "Please select .strings or .xcstrings file"
+            panel.message = "Please select .strings or .xcstrings file".localized
         case .flutter:
-            panel.message = "Please select .arb file"
+            panel.message = "Please select .arb file".localized
         case .electron:
-            panel.message = "Please select .json file"
+            panel.message = "Please select .json file".localized
         }
         
         panel.begin { response in
@@ -86,7 +86,7 @@ struct TransferView: View {
                 }
                 
                 // 重置输出路径
-                self.outputPath = "未选择保存位置".localized
+                self.outputPath = "No save location selected".localized
                 self.isOutputSelected = false
             }
         }
@@ -100,9 +100,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "Select directory for JSON files"
-            openPanel.prompt = "Select"
-            openPanel.title = "Select Save Directory"
+            openPanel.message = "Select directory for JSON files".localized
+            openPanel.prompt = "Select".localized
+            openPanel.title = "Select Save Directory".localized
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -119,9 +119,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "Select directory for ARB files"
-            openPanel.prompt = "Select"
-            openPanel.title = "Select Save Directory"
+            openPanel.message = "Select directory for ARB files".localized
+            openPanel.prompt = "Select".localized
+            openPanel.title = "Select Save Directory".localized
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -138,9 +138,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "Select directory for language files"
-            openPanel.prompt = "Select"
-            openPanel.title = "Select Save Directory"
+            openPanel.message = "Select directory for language files".localized
+            openPanel.prompt = "Select".localized
+            openPanel.title = "Select Save Directory".localized
             
             // 设置可以访问的目录类型
             openPanel.treatsFilePackagesAsDirectories = true
@@ -167,8 +167,8 @@ struct TransferView: View {
             panel.nameFieldStringValue = defaultFileName
             
             panel.canCreateDirectories = true
-            panel.title = "Save Localization File"
-            panel.message = "Select location to save .xcstrings file"
+            panel.title = "Save Localization File".localized
+            panel.message = "Select location to save .xcstrings file".localized
             
             panel.begin { [self] response in
                 if response == .OK, let fileURL = panel.url {
@@ -263,8 +263,8 @@ struct TransferView: View {
     private func resetAll() {
         withAnimation(.smooth(duration: 0.3)) {
             // 重置文件路径
-            inputPath = "未选择文件"
-            outputPath = "未选择保存位置"
+            inputPath = "No file selected".localized
+            outputPath = "No save location selected".localized
             isInputSelected = false
             isOutputSelected = false
             
@@ -294,10 +294,10 @@ struct TransferView: View {
                 VStack(spacing: 20) {
                     // 添加平台选择部分
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("选择平台".localized)
+                        Text("Select Platform".localized)
                             .font(.headline)
                         
-                        Picker("平台".localized, selection: $selectedPlatform) {
+                        Picker("Platform".localized, selection: $selectedPlatform) {
                             ForEach(PlatformType.allCases, id: \.self) { platform in
                                 Text(platform.description)
                                     .tag(platform)
@@ -315,7 +315,7 @@ struct TransferView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         // 左对齐的内容容器
                         VStack(alignment: .leading, spacing: 10) {
-                            Button("选择读取文件") {
+                            Button("Select Input File".localized) {
                                 selectInputFile()
                             }
                             Text(inputPath.localized)
@@ -326,10 +326,10 @@ struct TransferView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 10) {
-                            Button("选择保存路径".localized) {
+                            Button("Select Output Location".localized) {
                                 selectOutputPath()
                             }
-                            Text(outputPath)
+                            Text(outputPath.localized)
                                 .foregroundColor(.gray)
                                 .font(.system(.body, design: .monospaced))
                                 .lineLimit(1)
@@ -339,7 +339,7 @@ struct TransferView: View {
                         // 语言选择部分
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
-                                Text("选择目标语言".localized)
+                                Text("Select Target Languages".localized)
                                     .font(.headline)
                                 
                                 Spacer()
@@ -354,7 +354,7 @@ struct TransferView: View {
                                         selectedLanguages = Set(Language.supportedLanguages)
                                     }
                                 }) {
-                                    Text(selectedLanguages.count == Language.supportedLanguages.count ? "取消全选" : "全选")
+                                    Text(selectedLanguages.count == Language.supportedLanguages.count ? "Deselect All".localized : "Select All".localized)
                                         .font(.subheadline)
                                 }
                                 .buttonStyle(.borderless)
@@ -385,7 +385,7 @@ struct TransferView: View {
                     .frame(maxWidth: .infinity, alignment: .leading) // 使内容靠左对齐
                     
                     HStack(spacing: 12) {
-                        Button("开始转换".localized) {
+                        Button("Start Conversion".localized) {
                             convertToLocalization()
                         }
                         .disabled(!isInputSelected || !isOutputSelected || selectedLanguages.isEmpty || isLoading)
@@ -394,7 +394,7 @@ struct TransferView: View {
                         Button(action: resetAll) {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.counterclockwise")
-                                Text("重置".localized)
+                                Text("Reset".localized)
                             }
                         }
                         .buttonStyle(.bordered)
@@ -410,7 +410,7 @@ struct TransferView: View {
                             
                             if showSuccessActions {
                                 VStack(spacing: 8) {
-                                    Text("文件保存路径：".localized)
+                                    Text("Save Path:".localized)
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                     
@@ -424,7 +424,7 @@ struct TransferView: View {
                                     Button(action: openInFinder) {
                                         HStack {
                                             Image(systemName: "folder")
-                                            Text("在 Finder 中显示".localized)
+                                            Text("Show in Finder".localized)
                                         }
                                     }
                                     .buttonStyle(.borderless)
@@ -455,9 +455,9 @@ struct TransferView: View {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("正在翻译中...".localized)
+                    Text("Translating...".localized)
                         .font(.headline)
-                    Text("请耐心等待，这可能需要一些时间".localized)
+                    Text("Please wait, this may take a while".localized)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
