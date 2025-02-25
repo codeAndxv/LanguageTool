@@ -16,9 +16,9 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-            Section(header: Text("API 设置".localized)) {
+            Section(header: Text("API Settings".localized)) {
                 // AI 服务选择
-                Picker("翻译服务".localized, selection: $selectedService) {
+                Picker("Translation Service".localized, selection: $selectedService) {
                     ForEach(AIServiceType.allCases, id: \.self) { service in
                         Text(service.rawValue).tag(service)
                     }
@@ -38,8 +38,8 @@ struct SettingsView: View {
                 }
             }
             
-            Section(header: Text("语言设置".localized)) {
-                Picker("界面语言".localized, selection: $appLanguage) {
+            Section(header: Text("Language Settings".localized)) {
+                Picker("Interface Language".localized, selection: $appLanguage) {
                     ForEach(supportedLanguages, id: \.0) { code, name in
                         Text(name).tag(code)
                     }
@@ -55,8 +55,8 @@ struct SettingsView: View {
                 }
             }
             
-            Section("其他设置".localized) {
-                Text("更多设置项开发中...".localized)
+            Section("Other Settings".localized) {
+                Text("More Settings Under Development...".localized)
                     .foregroundColor(.secondary)
             }
         }
