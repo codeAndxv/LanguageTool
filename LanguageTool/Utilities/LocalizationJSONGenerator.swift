@@ -13,14 +13,14 @@ class LocalizationJSONGenerator {
         
         // 语言名称映射
         let languageNames = [
-            "en": "英语",
-            "zh-Hans": "简体中文",
-            "zh-Hant": "繁体中文",
-            "ja": "日语",
-            "ko": "韩语",
-            "es": "西班牙语",
-            "fr": "法语",
-            "de": "德语"
+            "en": "English",
+            "zh-Hans": "Simplified Chinese",
+            "zh-Hant": "Traditional Chinese",
+            "ja": "Japanese",
+            "ko": "Korean",
+            "es": "Spanish",
+            "fr": "French",
+            "de": "German"
         ]
         
         // 为每种语言批量翻译所有键
@@ -46,7 +46,7 @@ class LocalizationJSONGenerator {
             } else {
                 do {
                     // 使用优化后的批量翻译方法
-                    print("开始批量翻译 [\(language)]...")
+                    print("Starting batch translation [\(language)]...")
                     let translations = try await AIService.shared.batchTranslate(
                         texts: keys,
                         to: languageNames[language] ?? language
@@ -71,9 +71,9 @@ class LocalizationJSONGenerator {
                         }
                     }
                     
-                    print("✅ 批量翻译成功 [\(language)]: \(keys.count) 个词条")
+                    print("✅ Batch translation successful [\(language)]: \(keys.count) entries")
                 } catch {
-                    print("❌ 批量翻译失败 [\(language)]: \(error.localizedDescription)")
+                    print("❌ Batch translation failed [\(language)]: \(error.localizedDescription)")
                     // 翻译失败时为所有键设置空值
                     for key in keys {
                         if stringsDict[key] == nil {

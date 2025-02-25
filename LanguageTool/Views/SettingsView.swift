@@ -8,7 +8,10 @@ struct SettingsView: View {
     
     private let supportedLanguages = [
         ("en", "English".localized),
-        ("zh-Hans", "Simplified Chinese".localized)
+        ("zh-Hans", "Simplified Chinese".localized),
+        ("zh-Hant", "Traditional Chinese".localized),
+        ("ja", "Japanese".localized),
+        ("ko", "Korean".localized)
     ]
     
     // 添加语言切换通知
