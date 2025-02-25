@@ -6,12 +6,13 @@ struct SettingsView: View {
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"  // 默认为英语
     
+    // 修改为使用原生语言名称
     private let supportedLanguages = [
-        ("en", "English".localized),
-        ("zh-Hans", "Simplified Chinese".localized),
-        ("zh-Hant", "Traditional Chinese".localized),
-        ("ja", "Japanese".localized),
-        ("ko", "Korean".localized)
+        ("en", "English"),
+        ("zh-Hans", "简体中文"),
+        ("zh-Hant", "繁體中文"),
+        ("ja", "日本語"),
+        ("ko", "한국어")
     ]
     
     // 添加语言切换通知
@@ -43,8 +44,8 @@ struct SettingsView: View {
             
             Section(header: Text("Language Settings".localized)) {
                 Picker("Interface Language".localized, selection: $appLanguage) {
-                    ForEach(supportedLanguages, id: \.0) { code, name in
-                        Text(name).tag(code)
+                    ForEach(supportedLanguages, id: \.0) { code, nativeName in
+                        Text(nativeName).tag(code)
                     }
                 }
                 .onChange(of: appLanguage) { oldValue, newValue in
