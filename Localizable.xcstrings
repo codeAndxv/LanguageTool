@@ -17,7 +17,19 @@
     "Gemini API Key" : {
 
     },
+    "Interface Language" : {
+
+    },
+    "Language Setting Changed" : {
+
+    },
     "Language Tool" : {
+
+    },
+    "OK" : {
+
+    },
+    "Please restart the app to apply the new language setting" : {
 
     },
     "其他设置" : {
@@ -109,6 +121,9 @@
           }
         }
       }
+    },
+    "语言设置" : {
+
     },
     "请耐心等待，这可能需要一些时间" : {
       "localizations" : {

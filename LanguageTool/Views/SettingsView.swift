@@ -4,6 +4,12 @@ struct SettingsView: View {
     @AppStorage("apiKey") private var apiKey: String = ""
     @AppStorage("selectedAIService") private var selectedService: AIServiceType = .deepseek
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
+    @AppStorage("appLanguage") private var appLanguage: String = "en"  // 默认为英语
+    
+    private let supportedLanguages = [
+        ("en", "English"),
+        ("zh-Hans", "简体中文")
+    ]
     
     var body: some View {
         Form {
@@ -26,6 +32,24 @@ struct SettingsView: View {
                 if selectedService == .gemini {
                     SecureField("Gemini API Key", text: $geminiApiKey)
                         .textFieldStyle(.roundedBorder)
+                }
+            }
+            
+            Section(header: Text("语言设置")) {
+                // 语言选择
+                Picker("Interface Language", selection: $appLanguage) {
+                    ForEach(supportedLanguages, id: \.0) { code, name in
+                        Text(name).tag(code)
+                    }
+                }
+                .onChange(of: appLanguage) { oldValue, newValue in
+                    // 提示用户需要重启应用
+                    let alert = NSAlert()
+                    alert.messageText = String(localized: "Language Setting Changed")
+                    alert.informativeText = String(localized: "Please restart the app to apply the new language setting")
+                    alert.alertStyle = .informational
+                    alert.addButton(withTitle: String(localized: "OK"))
+                    alert.runModal()
                 }
             }
             

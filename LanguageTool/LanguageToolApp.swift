@@ -3,6 +3,17 @@ import SwiftData
 
 @main
 struct LanguageToolApp: App {
+    init() {
+        // 读取保存的语言设置
+        if let savedLanguage = UserDefaults.standard.string(forKey: "appLanguage") {
+            UserDefaults.standard.set([savedLanguage], forKey: "AppleLanguages")
+        } else {
+            // 默认设置为英语
+            UserDefaults.standard.set(["en"], forKey: "AppleLanguages")
+            UserDefaults.standard.set("en", forKey: "appLanguage")
+        }
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
