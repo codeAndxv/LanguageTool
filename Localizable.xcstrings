@@ -71,9 +71,6 @@
         }
       }
     },
-    "DeepSeek API Key" : {
-
-    },
     "Deselect All" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -143,9 +140,6 @@
           }
         }
       }
-    },
-    "Gemini API Key" : {
-
     },
     "Input Message" : {
       "extractionState" : "stale",

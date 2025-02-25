@@ -19,77 +19,128 @@ class AIService {
         AppSettings.shared.apiKey
     }
     
-    private let baseURL = "https://api.deepseek.com/v1/chat/completions"
-
-    enum AIError: Error {
-        case invalidURL
-        case networkError(Error)
-        case invalidResponse
-        case jsonError(Error)
-        case invalidConfiguration(String)
-        
-        var localizedDescription: String {
-            switch self {
-            case .invalidConfiguration(let message):
-                return "⚠️ 配置错误: \(message)"
-            case .invalidURL:
-                return "❌ URL 创建失败"
-            case .networkError(let error):
-                return "❌ 网络错误: \(error.localizedDescription)"
-            case .invalidResponse:
-                return "⚠️ 无效的响应"
-            case .jsonError(let error):
-                return "❌ JSON 错误: \(error.localizedDescription)"
+    // 根据选择的服务返回对应的 baseURL
+    private var baseURL: String {
+        switch selectedService {
+        case .deepseek:
+            return "https://api.deepseek.com/v1/chat/completions"
+        case .gemini:
+            return "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+        }
+    }
+    
+    // 根据选择的服务构建请求体
+    private func buildRequestBody(messages: [Message]) -> [String: Any] {
+        switch selectedService {
+        case .deepseek:
+            return [
+                "model": "deepseek-chat",
+                "messages": messages.map { ["role": $0.role, "content": $0.content] }
+            ]
+        case .gemini:
+            return [
+                "contents": [
+                    [
+                        "parts": [
+                            [
+                                "text": messages.last?.content ?? ""
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        }
+    }
+    
+    // 根据选择的服务解析响应
+    private func parseResponse(data: Data) throws -> String {
+        switch selectedService {
+        case .deepseek:
+            let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            
+            // 检查错误响应
+            if let error = jsonDict?["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                if message.contains("rate limit") {
+                    throw AIError.rateLimitExceeded
+                } else if message.contains("invalid api key") {
+                    throw AIError.unauthorized
+                }
+                throw AIError.apiError(message)
             }
+            
+            // 解析正常响应
+            if let choices = jsonDict?["choices"] as? [[String: Any]],
+               let firstChoice = choices.first,
+               let message = firstChoice["message"] as? [String: Any],
+               let content = message["content"] as? String {
+                return content
+            }
+            throw AIError.invalidResponse
+            
+        case .gemini:
+            let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            
+            // 检查错误响应
+            if let error = jsonResponse?["error"] as? [String: Any],
+               let message = error["message"] as? String {
+                if message.contains("quota") {
+                    throw AIError.rateLimitExceeded
+                } else if message.contains("API key") {
+                    throw AIError.unauthorized
+                }
+                throw AIError.apiError(message)
+            }
+            
+            // 解析正常响应
+            if let candidates = jsonResponse?["candidates"] as? [[String: Any]],
+               let firstCandidate = candidates.first,
+               let content = firstCandidate["content"] as? [String: Any],
+               let parts = content["parts"] as? [[String: Any]],
+               let firstPart = parts.first,
+               let text = firstPart["text"] as? String {
+                return text
+            }
+            throw AIError.invalidResponse
         }
     }
     
     func sendMessage(messages: [Message], completion: @escaping (Result<String, AIError>) -> Void) {
-        // 检查 API Key
-        guard !apiKey.isEmpty else {
-            completion(.failure(.invalidConfiguration("未设置 API Key")))
-            return
-        }
-        
         guard let url = URL(string: baseURL) else {
             completion(.failure(.invalidURL))
             return
         }
         
-        print("📝 准备发送的消息内容: \(messages)")
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         
-        let body: [String: Any] = [
-            "model": "deepseek-chat",
-            "messages": messages.map { ["role": $0.role, "content": $0.content] }
-        ]
+        // 根据服务类型设置不同的认证头
+        switch selectedService {
+        case .deepseek:
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        case .gemini:
+            // Gemini API key 直接附加在 URL 中，不需要认证头
+            break
+        }
+        
+        let body = buildRequestBody(messages: messages)
         
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON 序列化失败"])))) // 更详细的错误信息
+            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON serialization failed"]))))
             return
         }
         
         request.httpBody = jsonData
-        print("📤 发送请求体: \(String(data: jsonData, encoding: .utf8) ?? "")")
         
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("❌ 网络错误: \(error.localizedDescription)")
                 completion(.failure(.networkError(error)))
                 return
             }
             
-//            if let httpResponse = response as? HTTPURLResponse {
-//                print("📡 HTTP 状态码: \(httpResponse.statusCode)")
-//                print("📋 响应头: \(httpResponse.allHeaderFields)")
-//            }
-            
             guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else { // 检查HTTP状态码
+                  (200...299).contains(httpResponse.statusCode) else {
                 completion(.failure(.invalidResponse))
                 return
             }
@@ -99,26 +150,9 @@ class AIService {
                 return
             }
             
-            print("📥 收到响应数据: \(String(data: data, encoding: .utf8) ?? "")")
             do {
-                let json = try JSONSerialization.jsonObject(with: data)
-                print("✅ 解析后的 JSON: \(json)")
-            } catch {
-                print("❌ JSON 解析错误: \(error.localizedDescription)")
-            }
-            
-            do {
-                if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let choices = jsonDict["choices"] as? [[String: Any]],
-                   let firstChoice = choices.first,
-                   let message = firstChoice["message"] as? [String: Any],
-                   let content = message["content"] as? String {
-                    DispatchQueue.main.async { // 回到主线程
-                        completion(.success(content))
-                    }
-                } else {
-                    completion(.failure(.invalidResponse))
-                }
+                let content = try self.parseResponse(data: data)
+                completion(.success(content))
             } catch {
                 completion(.failure(.jsonError(error)))
             }
@@ -137,50 +171,99 @@ class AIService {
     }
     
     /// 批量翻译文本
-    func batchTranslate(texts: [String], to targetLanguage: String) async throws -> [String] {
-        // 将所有文本合并成一个字符串，使用特殊分隔符
-        let separator = "|||"
-        let combinedText = texts.joined(separator: separator)
+    func batchTranslate(
+        texts: [String],
+        to targetLanguage: String,
+        progressHandler: ((Double) -> Void)? = nil
+    ) async throws -> [String] {
+        let batchSize = 10  // 每批处理10个文本
+        var allTranslations: [String] = []
         
-        // 生成翻译提示
-        let prompt = """
-        请将以下文本翻译成\(targetLanguage)。
-        每个文本之间使用 ||| 分隔，请保持这个分隔符，只返回翻译结果：
-        
-        \(combinedText)
-        """
-        
-        let messages = [Message(role: "user", content: prompt)]
-        
-        // 发送翻译请求
-        let response = try await withCheckedThrowingContinuation { continuation in
-            sendMessage(messages: messages) { result in
-                switch result {
-                case .success(let content):
-                    continuation.resume(returning: content)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
+        // 将文本分批处理
+        for batchIndex in stride(from: 0, to: texts.count, by: batchSize) {
+            let endIndex = min(batchIndex + batchSize, texts.count)
+            let batchTexts = Array(texts[batchIndex..<endIndex])
+            
+            // 更新进度
+            let progress = Double(batchIndex) / Double(texts.count)
+            DispatchQueue.main.async {
+                progressHandler?(progress)
+            }
+            
+            // 处理当前批次
+            let separator = "|||"
+            let combinedText = batchTexts.joined(separator: separator)
+            
+            // 根据不同的 AI 服务生成不同的翻译提示
+            let prompt: String
+            switch selectedService {
+            case .deepseek:
+                prompt = """
+                请将以下文本翻译成\(targetLanguage)。
+                每个文本之间使用 ||| 分隔，请保持这个分隔符，只返回翻译结果：
+                
+                \(combinedText)
+                """
+            case .gemini:
+                prompt = """
+                Translate the following texts to \(targetLanguage).
+                Each text is separated by |||. Keep the separators and only return the translations:
+                
+                \(combinedText)
+                """
+            }
+            
+            let messages: [Message]
+            switch selectedService {
+            case .deepseek:
+                messages = [Message(role: "system", content: prompt)]
+            case .gemini:
+                messages = [Message(role: "user", content: prompt)]
+            }
+            
+            // 发送翻译请求
+            let response = try await withCheckedThrowingContinuation { continuation in
+                sendMessage(messages: messages) { result in
+                    switch result {
+                    case .success(let content):
+                        continuation.resume(returning: content)
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                    }
                 }
+            }
+            
+            // 清理并分割翻译结果
+            let cleanedResponse = response
+                .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                .replacingOccurrences(of: "\n", with: " ")
+                .replacingOccurrences(of: "\r", with: " ")
+                .replacingOccurrences(of: "  ", with: " ")
+            
+            let translations = cleanedResponse.components(separatedBy: separator)
+                .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            
+            // 确保翻译结果数量与原文本数量匹配
+            guard translations.count == batchTexts.count else {
+                throw AIError.invalidResponse
+            }
+            
+            // 添加到结果中
+            allTranslations.append(contentsOf: translations)
+            
+            // 添加延迟以避免触发速率限制
+            if endIndex < texts.count {
+                try await Task.sleep(nanoseconds: 1_000_000_000)  // 1秒延迟
             }
         }
         
-        // 清理并分割翻译结果
-        let cleanedResponse = response
-            .trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-            .replacingOccurrences(of: "\n", with: " ")
-            .replacingOccurrences(of: "\r", with: " ")
-            .replacingOccurrences(of: "  ", with: " ")
-        
-        let translations = cleanedResponse.components(separatedBy: separator)
-            .map { $0.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
-        
-        // 确保翻译结果数量与原文本数量匹配
-        guard translations.count == texts.count else {
-            throw AIError.invalidResponse
+        // 完成时更新进度为100%
+        DispatchQueue.main.async {
+            progressHandler?(1.0)
         }
         
-        return translations
+        return allTranslations
     }
     
     /// 生成翻译提示

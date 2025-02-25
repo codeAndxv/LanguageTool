@@ -22,22 +22,18 @@ struct SettingsView: View {
         Form {
             Section(header: Text("API Settings".localized)) {
                 // AI 服务选择
-                Picker("Translation Service".localized, selection: $selectedService) {
+                Picker("AI Service".localized, selection: $selectedService) {
                     ForEach(AIServiceType.allCases, id: \.self) { service in
-                        Text(service.rawValue).tag(service)
+                        Text(service.description).tag(service)
                     }
                 }
-                .pickerStyle(.segmented)
                 
-                // DeepSeek API Key
-                if selectedService == .deepseek {
-                    SecureField("DeepSeek API Key", text: $apiKey)
+                switch selectedService {
+                case .deepseek:
+                    SecureField("DeepSeek API Key".localized, text: $apiKey)
                         .textFieldStyle(.roundedBorder)
-                }
-                
-                // Gemini API Key
-                if selectedService == .gemini {
-                    SecureField("Gemini API Key", text: $geminiApiKey)
+                case .gemini:
+                    SecureField("Gemini API Key".localized, text: $geminiApiKey)
                         .textFieldStyle(.roundedBorder)
                 }
             }
