@@ -50,14 +50,14 @@ struct TransferView: View {
         }
         
         // 根据平台设置提示信息
-        panel.title = "选择本地化文件"
+        panel.title = "选择本地化文件".localized
         switch selectedPlatform {
         case .iOS:
-            panel.message = "请选择 .strings 或 .xcstrings 文件"
+            panel.message = "请选择 .strings 或 .xcstrings 文件".localized
         case .flutter:
-            panel.message = "请选择 .arb 文件"
+            panel.message = "请选择 .arb 文件".localized
         case .electron:
-            panel.message = "请选择 .json 文件"
+            panel.message = "请选择 .json 文件".localized
         }
         
         panel.begin { response in
@@ -86,7 +86,7 @@ struct TransferView: View {
                 }
                 
                 // 重置输出路径
-                self.outputPath = "未选择保存位置"
+                self.outputPath = "未选择保存位置".localized
                 self.isOutputSelected = false
             }
         }
@@ -100,9 +100,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存 JSON 文件的目录"
-            openPanel.prompt = "选择"
-            openPanel.title = "选择保存目录"
+            openPanel.message = "请选择保存 JSON 文件的目录".localized
+            openPanel.prompt = "选择".localized
+            openPanel.title = "选择保存目录".localized
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -119,9 +119,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存 ARB 文件的目录"
-            openPanel.prompt = "选择"
-            openPanel.title = "选择保存目录"
+            openPanel.message = "请选择保存 ARB 文件的目录".localized
+            openPanel.prompt = "选择".localized
+            openPanel.title = "选择保存目录".localized
             
             openPanel.treatsFilePackagesAsDirectories = true
             
@@ -138,9 +138,9 @@ struct TransferView: View {
             openPanel.canChooseFiles = false
             openPanel.canChooseDirectories = true
             openPanel.allowsMultipleSelection = false
-            openPanel.message = "请选择保存语言文件的目录"
-            openPanel.prompt = "选择"
-            openPanel.title = "选择保存目录"
+            openPanel.message = "请选择保存语言文件的目录".localized
+            openPanel.prompt = "选择".localized
+            openPanel.title = "选择保存目录".localized
             
             // 设置可以访问的目录类型
             openPanel.treatsFilePackagesAsDirectories = true
@@ -167,8 +167,8 @@ struct TransferView: View {
             panel.nameFieldStringValue = defaultFileName
             
             panel.canCreateDirectories = true
-            panel.title = "保存本地化文件"
-            panel.message = "选择保存 .xcstrings 文件的位置"
+            panel.title = "保存本地化文件".localized
+            panel.message = "选择保存 .xcstrings 文件的位置".localized
             
             panel.begin { [self] response in
                 if response == .OK, let fileURL = panel.url {
@@ -263,8 +263,8 @@ struct TransferView: View {
     private func resetAll() {
         withAnimation(.smooth(duration: 0.3)) {
             // 重置文件路径
-            inputPath = "未选择文件"
-            outputPath = "未选择保存位置"
+            inputPath = "未选择文件".localized
+            outputPath = "未选择保存位置".localized
             isInputSelected = false
             isOutputSelected = false
             
@@ -281,10 +281,10 @@ struct TransferView: View {
     // MARK: - 新增错误提示方法
     private func showErrorAlert(message: String) {
         let alert = NSAlert()
-        alert.messageText = "文件类型错误"
+        alert.messageText = "文件类型错误".localized
         alert.informativeText = message
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "确定")
+        alert.addButton(withTitle: "确定".localized)
         alert.runModal()
     }
     
@@ -339,7 +339,7 @@ struct TransferView: View {
                         // 语言选择部分
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
-                                Text("选择目标语言")
+                                Text("选择目标语言".localized)
                                     .font(.headline)
                                 
                                 Spacer()

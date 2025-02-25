@@ -4783,6 +4783,7 @@
       }
     },
     "选择目标语言" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
