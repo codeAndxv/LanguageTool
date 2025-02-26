@@ -6,13 +6,6 @@ struct Message: Codable {
     let content: String
 }
 
-// 定义一个协议，抽象出公共逻辑
-protocol AIServiceProtocol {
-    var baseURL: String { get }
-    func buildRequestBody(messages: [Message]) -> [String: Any]
-    func parseResponse(data: Data) throws -> String
-}
-
 class AIService {
     static let shared = AIService()
     
@@ -20,114 +13,120 @@ class AIService {
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
     
     // 添加批处理大小属性
-//    private let batchSize = 10  // 每批处理10个文本
+    private let batchSize = 10  // 每批处理10个文本
     
     private var apiKey: String {
         AppSettings.shared.apiKey
     }
     
-//    // 根据选择的服务返回对应的 baseURL
-//    internal var baseURL: String {
-//        switch selectedService {
-//        case .deepseek:
-//            return "https://api.deepseek.com/v1/chat/completions"
-//        case .gemini:
-//            return "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
-//        }
-//    }
-    
-    // 根据选择的服务构建请求体
-//    internal func buildRequestBody(messages: [Message]) -> [String: Any] {
-//        switch selectedService {
-//        case .deepseek:
-//            return [
-//                "model": "deepseek-chat",
-//                "messages": messages.map { ["role": $0.role, "content": $0.content] }
-//            ]
-//        case .gemini:
-//            return [
-//                "contents": [
-//                    [
-//                        "parts": [
-//                            [
-//                                "text": messages.last?.content ?? ""
-//                            ]
-//                        ]
-//                    ]
-//                ]
-//            ]
-//        }
-//    }
-//    
-//    // 根据选择的服务解析响应
-//    internal func parseResponse(data: Data) throws -> String {
-//        switch selectedService {
-//        case .deepseek:
-//            let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-//            
-//            // 检查错误响应
-//            if let error = jsonDict?["error"] as? [String: Any],
-//               let message = error["message"] as? String {
-//                if message.contains("rate limit") {
-//                    throw AIError.rateLimitExceeded
-//                } else if message.contains("invalid api key") {
-//                    throw AIError.unauthorized
-//                }
-//                throw AIError.apiError(message)
-//            }
-//            
-//            // 解析正常响应
-//            if let choices = jsonDict?["choices"] as? [[String: Any]],
-//               let firstChoice = choices.first,
-//               let message = firstChoice["message"] as? [String: Any],
-//               let content = message["content"] as? String {
-//                return content
-//            }
-//            throw AIError.invalidResponse
-//            
-//        case .gemini:
-//            let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-//            
-//            // 检查错误响应
-//            if let error = jsonResponse?["error"] as? [String: Any],
-//               let message = error["message"] as? String {
-//                if message.contains("quota") {
-//                    throw AIError.rateLimitExceeded
-//                } else if message.contains("API key") {
-//                    throw AIError.unauthorized
-//                }
-//                throw AIError.apiError(message)
-//            }
-//            
-//            // 解析正常响应
-//            if let candidates = jsonResponse?["candidates"] as? [[String: Any]],
-//               let firstCandidate = candidates.first,
-//               let content = firstCandidate["content"] as? [String: Any],
-//               let parts = content["parts"] as? [[String: Any]],
-//               let firstPart = parts.first,
-//               let text = firstPart["text"] as? String {
-//                return text
-//            }
-//            throw AIError.invalidResponse
-//        }
-//    }
-    
-    // 修改 sendMessage 方法以使用协议
-    func sendMessage(messages: [Message], completion: @escaping (Result<String, AIError>) -> Void) {
-        let service: AIServiceProtocol
+    private let baseURL = "https://api.deepseek.com/v1/chat/completions"
+
+    enum AIError: Error {
+        case invalidURL
+        case networkError(Error)
+        case invalidResponse
+        case jsonError(Error)
+        case invalidConfiguration(String)
         
-        switch selectedService {
-        case .deepseek:
-            service = DeepSeekService()
-        case .gemini:
-            service = GeminiService()
+        var localizedDescription: String {
+            switch self {
+            case .invalidConfiguration(let message):
+                return "⚠️ 配置错误: \(message)"
+            case .invalidURL:
+                return "❌ URL 创建失败"
+            case .networkError(let error):
+                return "❌ 网络错误: \(error.localizedDescription)"
+            case .invalidResponse:
+                return "⚠️ 无效的响应"
+            case .jsonError(let error):
+                return "❌ JSON 错误: \(error.localizedDescription)"
+            }
         }
-        
-        // 调用扩展中的 sendMessage 方法
-        sendMessage(messages: messages, service: service, completion: completion)
     }
     
-    //未使用？
+    func sendMessage(messages: [Message], completion: @escaping (Result<String, AIError>) -> Void) {
+        // 检查 API Key
+        guard !apiKey.isEmpty else {
+            completion(.failure(.invalidConfiguration("未设置 API Key")))
+            return
+        }
+        
+        guard let url = URL(string: baseURL) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+        
+        print("📝 准备发送的消息内容: \(messages)")
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        
+        let body: [String: Any] = [
+            "model": "deepseek-chat",
+            "messages": messages.map { ["role": $0.role, "content": $0.content] }
+        ]
+        
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON 序列化失败"])))) // 更详细的错误信息
+            return
+        }
+        
+        request.httpBody = jsonData
+        print("📤 发送请求体: \(String(data: jsonData, encoding: .utf8) ?? "")")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ 网络错误: \(error.localizedDescription)")
+                completion(.failure(.networkError(error)))
+                return
+            }
+            
+//            if let httpResponse = response as? HTTPURLResponse {
+//                print("📡 HTTP 状态码: \(httpResponse.statusCode)")
+//                print("📋 响应头: \(httpResponse.allHeaderFields)")
+//            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else { // 检查HTTP状态码
+                completion(.failure(.invalidResponse))
+                return
+            }
+            
+            guard let data = data else {
+                completion(.failure(.invalidResponse))
+                return
+            }
+            
+            print("📥 收到响应数据: \(String(data: data, encoding: .utf8) ?? "")")
+            do {
+                let json = try JSONSerialization.jsonObject(with: data)
+                print("✅ 解析后的 JSON: \(json)")
+            } catch {
+                print("❌ JSON 解析错误: \(error.localizedDescription)")
+            }
+            
+            do {
+                if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let choices = jsonDict["choices"] as? [[String: Any]],
+                   let firstChoice = choices.first,
+                   let message = firstChoice["message"] as? [String: Any],
+                   let content = message["content"] as? String {
+                    DispatchQueue.main.async { // 回到主线程
+                        completion(.success(content))
+                    }
+                } else {
+                    completion(.failure(.invalidResponse))
+                }
+            } catch {
+                completion(.failure(.jsonError(error)))
+            }
+        }
+        
+        task.resume()
+    }
+    
     func translate(text: String, to targetLanguage: String) async throws -> String {
         switch selectedService {
         case .deepseek:
@@ -223,7 +222,7 @@ class AIService {
     
     // 原有的 DeepSeek 翻译方法
     private func translateWithDeepseek(text: String, to targetLanguage: String) async throws -> String {
-        let message = Message(role: "system", 
+        let message = Message(role: "system",
                             content: "将以下文本翻译成\(targetLanguage)语言，只需要返回翻译结果，不需要任何解释：\n\(text)")
         
         return try await withCheckedThrowingContinuation { continuation in
@@ -281,7 +280,7 @@ class AIService {
     
     /// 测试 Gemini API 连接
     func testGemini() async throws {
-        let apiKey = "AIzaSyAsneGHF01bSpb1uxAYpnxFMW3iLI0oC5w"  // 替换为实际的 API key
+        let apiKey = "YOUR_API_KEY"  // 替换为实际的 API key
         let urlString = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\(apiKey)"
         let url = URL(string: urlString)!
         
@@ -291,7 +290,7 @@ class AIService {
                 [
                     "parts": [
                         [
-                            "text": "请将以下文本翻译成en-IN。\n每个文本之间使用 ||| 分隔，请保持这个分隔符，只返回翻译结果：\n\n左侧|||首页|||更改|||右侧|||统计|||总计|||统计图表"
+                            "text": "Hello, this is a test message."
                         ]
                     ]
                 ]
@@ -325,155 +324,4 @@ class AIService {
         }
     }
     
-}
-
-// 扩展 AIService 以实现协议
-extension AIService {
-    func sendMessage<T: AIServiceProtocol>(messages: [Message], service: T, completion: @escaping (Result<String, AIError>) -> Void) {
-        guard let url = URL(string: service.baseURL) else {
-            completion(.failure(.invalidURL))
-            return
-        }
-        
-        print("📝 准备发送的消息内容: \(messages)")
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let body = service.buildRequestBody(messages: messages)
-        
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON 序列化失败"]))))
-            return
-        }
-        
-        request.httpBody = jsonData
-        print("📤 发送请求体: \(String(data: jsonData, encoding: .utf8) ?? "")")
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                print("❌ 网络错误: \(error.localizedDescription)")
-                completion(.failure(.networkError(error)))
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse else {
-                completion(.failure(.invalidResponse))
-                return
-            }
-            
-            print("📡 HTTP 状态码: \(httpResponse.statusCode)")  // 打印状态码
-            
-            guard (200...299).contains(httpResponse.statusCode) else {
-                print("❌ 无效的响应状态码: \(httpResponse.statusCode)")
-                completion(.failure(.invalidResponse))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(.invalidResponse))
-                return
-            }
-            
-            print("📥 收到响应数据: \(String(data: data, encoding: .utf8) ?? "")")
-            
-            do {
-                let responseText = try service.parseResponse(data: data)
-                DispatchQueue.main.async {
-                    completion(.success(responseText))
-                }
-            } catch {
-                print("❌ JSON 解析错误: \(error.localizedDescription)")
-                completion(.failure(.jsonError(error)))
-            }
-        }
-        
-        task.resume()
-    }
-}
-
-// DeepSeek 服务实现
-struct DeepSeekService: AIServiceProtocol {
-    var baseURL: String {
-        return "https://api.deepseek.com/v1/chat/completions"
-    }
-    
-    func buildRequestBody(messages: [Message]) -> [String: Any] {
-        return [
-            "model": "deepseek-chat",
-            "messages": messages.map { ["role": $0.role, "content": $0.content] }
-        ]
-    }
-    
-    func parseResponse(data: Data) throws -> String {
-        let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        
-        // 检查错误响应
-        if let error = jsonDict?["error"] as? [String: Any],
-           let message = error["message"] as? String {
-            if message.contains("rate limit") {
-                throw AIError.rateLimitExceeded
-            } else if message.contains("invalid api key") {
-                throw AIError.unauthorized
-            }
-            throw AIError.apiError(message)
-        }
-        
-        // 解析正常响应
-        if let choices = jsonDict?["choices"] as? [[String: Any]],
-           let firstChoice = choices.first,
-           let message = firstChoice["message"] as? [String: Any],
-           let content = message["content"] as? String {
-            return content
-        }
-        throw AIError.invalidResponse
-    }
-}
-
-// Gemini 服务实现
-struct GeminiService: AIServiceProtocol {
-    var baseURL: String {
-        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-    }
-    
-    func buildRequestBody(messages: [Message]) -> [String: Any] {
-        return [
-            "contents": [
-                [
-                    "parts": [
-                        [
-                            "text": messages.last?.content ?? ""
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    }
-    
-    func parseResponse(data: Data) throws -> String {
-        let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        
-        // 检查错误响应
-        if let error = jsonResponse?["error"] as? [String: Any],
-           let message = error["message"] as? String {
-            if message.contains("quota") {
-                throw AIError.rateLimitExceeded
-            } else if message.contains("API key") {
-                throw AIError.unauthorized
-            }
-            throw AIError.apiError(message)
-        }
-        
-        // 解析正常响应
-        if let candidates = jsonResponse?["candidates"] as? [[String: Any]],
-           let firstCandidate = candidates.first,
-           let content = firstCandidate["content"] as? [String: Any],
-           let parts = content["parts"] as? [[String: Any]],
-           let firstPart = parts.first,
-           let text = firstPart["text"] as? String {
-            return text
-        }
-        throw AIError.invalidResponse
-    }
 }
