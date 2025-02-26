@@ -12,8 +12,6 @@
 	<string>需要访问下载文件夹来保存本地化文件</string>
 	<key>NSDesktopFolderUsageDescription</key>
 	<string>需要访问桌面文件夹来保存本地化文件</string>
-	<key>com.apple.security.files.user-selected.read-write</key>
-	<true/>
 	<key>NSAppleEventsUsageDescription</key>
 	<string>需要访问系统权限来保存本地化文件</string>
 	<key>com.apple.security.files.downloads.read-write</key>

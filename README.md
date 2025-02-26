@@ -77,7 +77,7 @@ Language Tool 是一个 macOS 应用程序，用于自动化生成多平台的�
    ```
 2. 使用 Xcode 打开项目
 3. 选择 Product > Build
-4. 构建完成后，应用会出现在 Xcode 的产品文件夹中
+4. 构建完成后，应用会出现在 Xcode 的 product文件夹中
 
 ## 开发环境
 
