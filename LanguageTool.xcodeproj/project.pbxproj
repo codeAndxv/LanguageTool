@@ -324,6 +324,10 @@
 				INFOPLIST_FILE = LanguageTool/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LanguageTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "需要访问系统权限来保存本地化文件";
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "需要访问桌面文件夹来保存本地化文件";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "需要访问文档文件夹来保存本地化文件";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "需要访问下载文件夹来保存本地化文件";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -356,6 +360,10 @@
 				INFOPLIST_FILE = LanguageTool/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = LanguageTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "需要访问系统权限来保存本地化文件";
+				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "需要访问桌面文件夹来保存本地化文件";
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "需要访问文档文件夹来保存本地化文件";
+				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "需要访问下载文件夹来保存本地化文件";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
