@@ -1,6 +1,12 @@
 import Foundation
 import SwiftUI
 
+protocol AIServiceProtocol {
+    var baseURL: String { get }
+    func buildRequestBody(messages: [Message]) -> [String: Any]
+    func parseResponse(data: Data) throws -> String
+}
+
 struct Message: Codable {
     let role: String
     let content: String
@@ -11,9 +17,6 @@ class AIService {
     
     @AppStorage("selectedAIService") private var selectedService: AIServiceType = .deepseek
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
-    
-    // 添加批处理大小属性
-    private let batchSize = 10  // 每批处理10个文本
     
     private var apiKey: String {
         AppSettings.shared.apiKey
