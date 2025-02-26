@@ -6,6 +6,13 @@ struct Message: Codable {
     let content: String
 }
 
+// 定义一个协议，抽象出公共逻辑
+protocol AIServiceProtocol {
+    var baseURL: String { get }
+    func buildRequestBody(messages: [Message]) -> [String: Any]
+    func parseResponse(data: Data) throws -> String
+}
+
 class AIService {
     static let shared = AIService()
     
@@ -20,7 +27,7 @@ class AIService {
     }
     
     // 根据选择的服务返回对应的 baseURL
-    private var baseURL: String {
+    internal var baseURL: String {
         switch selectedService {
         case .deepseek:
             return "https://api.deepseek.com/v1/chat/completions"
@@ -30,7 +37,7 @@ class AIService {
     }
     
     // 根据选择的服务构建请求体
-    private func buildRequestBody(messages: [Message]) -> [String: Any] {
+    internal func buildRequestBody(messages: [Message]) -> [String: Any] {
         switch selectedService {
         case .deepseek:
             return [
@@ -53,7 +60,7 @@ class AIService {
     }
     
     // 根据选择的服务解析响应
-    private func parseResponse(data: Data) throws -> String {
+    internal func parseResponse(data: Data) throws -> String {
         switch selectedService {
         case .deepseek:
             let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any]
@@ -105,62 +112,19 @@ class AIService {
         }
     }
     
+    // 修改 sendMessage 方法以使用协议
     func sendMessage(messages: [Message], completion: @escaping (Result<String, AIError>) -> Void) {
-        guard let url = URL(string: baseURL) else {
-            completion(.failure(.invalidURL))
-            return
-        }
-        
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        // 根据服务类型设置不同的认证头
+        let service: AIServiceProtocol
         switch selectedService {
         case .deepseek:
-            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+            service = DeepSeekService()
         case .gemini:
-            // Gemini API key 直接附加在 URL 中，不需要认证头
-            break
+            service = GeminiService()
         }
         
-        let body = buildRequestBody(messages: messages)
-        
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON serialization failed"]))))
-            return
-        }
-        
-        request.httpBody = jsonData
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(.networkError(error)))
-                return
-            }
-            
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                completion(.failure(.invalidResponse))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(.invalidResponse))
-                return
-            }
-            
-            do {
-                let content = try self.parseResponse(data: data)
-                completion(.success(content))
-            } catch {
-                completion(.failure(.jsonError(error)))
-            }
-        }
-        
-        task.resume()
+        sendMessage(messages: messages, service: service, completion: completion)
     }
-    
+    //未使用？
     func translate(text: String, to targetLanguage: String) async throws -> String {
         switch selectedService {
         case .deepseek:
@@ -407,4 +371,149 @@ class AIService {
         }
     }
     
+}
+
+
+// 扩展 AIService 以实现协议
+extension AIService: AIServiceProtocol {
+    func sendMessage<T: AIServiceProtocol>(messages: [Message], service: T, completion: @escaping (Result<String, AIError>) -> Void) {
+        guard let url = URL(string: service.baseURL) else {
+            completion(.failure(.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // 根据服务类型设置不同的认证头
+        switch selectedService {
+        case .deepseek:
+            request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        case .gemini:
+            // Gemini API key 直接附加在 URL 中，不需要认证头
+            break
+        }
+        
+        let body = service.buildRequestBody(messages: messages)
+        
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
+            completion(.failure(.jsonError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "JSON serialization failed"]))))
+            return
+        }
+        
+        request.httpBody = jsonData
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(.networkError(error)))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(.invalidResponse))
+                return
+            }
+            
+            guard let data = data else {
+                completion(.failure(.invalidResponse))
+                return
+            }
+            
+            do {
+                let content = try service.parseResponse(data: data)
+                completion(.success(content))
+            } catch {
+                completion(.failure(.jsonError(error)))
+            }
+        }
+        
+        task.resume()
+    }
+}
+
+// DeepSeek 服务实现
+struct DeepSeekService: AIServiceProtocol {
+    var baseURL: String {
+        return "https://api.deepseek.com/v1/chat/completions"
+    }
+    
+    func buildRequestBody(messages: [Message]) -> [String: Any] {
+        return [
+            "model": "deepseek-chat",
+            "messages": messages.map { ["role": $0.role, "content": $0.content] }
+        ]
+    }
+    
+    func parseResponse(data: Data) throws -> String {
+        let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        
+        // 检查错误响应
+        if let error = jsonDict?["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            if message.contains("rate limit") {
+                throw AIError.rateLimitExceeded
+            } else if message.contains("invalid api key") {
+                throw AIError.unauthorized
+            }
+            throw AIError.apiError(message)
+        }
+        
+        // 解析正常响应
+        if let choices = jsonDict?["choices"] as? [[String: Any]],
+           let firstChoice = choices.first,
+           let message = firstChoice["message"] as? [String: Any],
+           let content = message["content"] as? String {
+            return content
+        }
+        throw AIError.invalidResponse
+    }
+}
+
+// Gemini 服务实现
+struct GeminiService: AIServiceProtocol {
+    var baseURL: String {
+        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent"
+    }
+    
+    func buildRequestBody(messages: [Message]) -> [String: Any] {
+        return [
+            "contents": [
+                [
+                    "parts": [
+                        [
+                            "text": messages.last?.content ?? ""
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    }
+    
+    func parseResponse(data: Data) throws -> String {
+        let jsonResponse = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        
+        // 检查错误响应
+        if let error = jsonResponse?["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            if message.contains("quota") {
+                throw AIError.rateLimitExceeded
+            } else if message.contains("API key") {
+                throw AIError.unauthorized
+            }
+            throw AIError.apiError(message)
+        }
+        
+        // 解析正常响应
+        if let candidates = jsonResponse?["candidates"] as? [[String: Any]],
+           let firstCandidate = candidates.first,
+           let content = firstCandidate["content"] as? [String: Any],
+           let parts = content["parts"] as? [[String: Any]],
+           let firstPart = parts.first,
+           let text = firstPart["text"] as? String {
+            return text
+        }
+        throw AIError.invalidResponse
+    }
 }
