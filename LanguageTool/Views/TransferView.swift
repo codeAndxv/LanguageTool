@@ -15,6 +15,7 @@ struct TransferView: View {
     @State private var outputFormat: LocalizationFormat = .xcstrings
     @State private var selectedPlatform: PlatformType = .iOS
     @State private var languageChanged = false  // 添加语言变更状态
+    @State private var testGeminiResult: String = ""  // 用于存储测试结果
     
     private let columns = [
         GridItem(.adaptive(minimum: 160))
@@ -402,6 +403,21 @@ struct TransferView: View {
                         .disabled(isLoading)
                     }
                     
+                    // 添加测试 Gemini API 的按钮
+                    Button("Test Gemini API") {
+                        testGemini()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .padding()
+
+                    // 显示测试结果
+                    if !testGeminiResult.isEmpty {
+                        Text(testGeminiResult)
+                            .foregroundColor(.green)
+                            .font(.system(.body, design: .rounded))
+                            .padding()
+                    }
+                    
                     // 结果显示区域
                     if showResult {
                         VStack(spacing: 12) {
@@ -475,6 +491,17 @@ struct TransferView: View {
         .onReceive(NotificationCenter.default.publisher(for: .languageChanged)) { _ in
             // 接收到语言变更通知时，触发视图刷新
             languageChanged.toggle()
+        }
+    }
+
+    private func testGemini() {
+        Task {
+            do {
+                let result = try await AIService.shared.testGemini()  // 调用 testGemini 方法
+                testGeminiResult = "测试成功: \(result)"  // 更新测试结果
+            } catch {
+                testGeminiResult = "测试失败: \(error.localizedDescription)"  // 处理错误
+            }
         }
     }
 }

@@ -8,6 +8,7 @@ enum AIError: LocalizedError {
     case apiError(String)
     case rateLimitExceeded
     case unauthorized
+    case invalidConfiguration(String)
     
     var errorDescription: String? {
         switch self {
@@ -25,6 +26,8 @@ enum AIError: LocalizedError {
             return "Rate Limit Exceeded".localized
         case .unauthorized:
             return "Invalid API Key".localized
+        case .invalidConfiguration(let message):
+            return "⚠️ 配置错误: \(message)"
         }
     }
 } 
