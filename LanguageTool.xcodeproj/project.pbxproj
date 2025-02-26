@@ -315,14 +315,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2025022501;
+				CURRENT_PROJECT_VERSION = 2025022502;
 				DEVELOPMENT_ASSET_PATHS = "\"LanguageTool/Preview Content\"";
 				DEVELOPMENT_TEAM = R9TC286V25;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LanguageTool/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = L18nTools;
+				INFOPLIST_KEY_CFBundleDisplayName = LanguageTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -347,14 +347,14 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 2025022501;
+				CURRENT_PROJECT_VERSION = 2025022502;
 				DEVELOPMENT_ASSET_PATHS = "\"LanguageTool/Preview Content\"";
 				DEVELOPMENT_TEAM = R9TC286V25;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = LanguageTool/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = L18nTools;
+				INFOPLIST_KEY_CFBundleDisplayName = LanguageTool;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
