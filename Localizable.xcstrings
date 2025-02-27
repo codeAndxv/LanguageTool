@@ -13,7 +13,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "API設定"
+            "value" : "API 設定"
           }
         },
         "ko" : {
@@ -31,7 +31,42 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "API設置"
+            "value" : "API設定"
+          }
+        }
+      }
+    },
+    "Appearance Settings" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appearance Settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外観設定"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모양 설정"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外观设置"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外觀設定"
           }
         }
       }
@@ -48,7 +83,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "変換成功！"
+            "value" : "変換完了！"
           }
         },
         "ko" : {
@@ -71,6 +106,41 @@
         }
       }
     },
+    "Dark Mode" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark Mode"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダークモード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다크 모드"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗黑模式"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深色模式"
+          }
+        }
+      }
+    },
     "Deselect All" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -83,13 +153,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すべての選択を解除"
+            "value" : "すべて選択解除"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모두 선택 해제"
+            "value" : "모두 선택 취소"
           }
         },
         "zh-Hans" : {
@@ -136,7 +206,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "英語"
+            "value" : "英文"
           }
         }
       }
@@ -165,7 +235,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "输入消息"
+            "value" : "输入信息"
           }
         },
         "zh-Hant" : {
@@ -206,7 +276,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "界面語言"
+            "value" : "介面語言"
           }
         }
       }
@@ -311,7 +381,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "語言設置"
+            "value" : "語言設定"
           }
         }
       }
@@ -331,25 +401,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開発中のその他の設定..."
+            "value" : "その他の設定は開発中です…"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "추가 설정 개발 중..."
+            "value" : "더 많은 설정 개발 중..."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更多设置开发中..."
+            "value" : "更多设置正在开发中…"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更多設置正在開發中..."
+            "value" : "更多設定開發中…"
           }
         }
       }
@@ -366,13 +436,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ファイルが選択されていません"
+            "value" : "ファイルを選択していません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "선택된 파일 없음"
+            "value" : "파일을 선택하지 않았습니다"
           }
         },
         "zh-Hans" : {
@@ -384,7 +454,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未選擇文件"
+            "value" : "未選擇檔案"
           }
         }
       }
@@ -401,13 +471,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存場所が選択されていません"
+            "value" : "保存場所を選択していません"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "저장 위치가 선택되지 않음"
+            "value" : "저장 위치를 선택하지 않았습니다"
           }
         },
         "zh-Hans" : {
@@ -419,7 +489,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未選擇保存位置"
+            "value" : "未選擇儲存位置"
           }
         }
       }
@@ -436,7 +506,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "その他の設定"
+            "value" : "その他設定"
           }
         },
         "ko" : {
@@ -454,7 +524,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "其他設置"
+            "value" : "其他設定"
           }
         }
       }
@@ -506,13 +576,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".arbファイルを選択してください"
+            "value" : ".arb ファイルを選択してください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".arb 파일을 선택해 주세요"
+            "value" : ".arb 파일을 선택하십시오"
           }
         },
         "zh-Hans" : {
@@ -524,7 +594,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請選擇.arb文件"
+            "value" : "請選擇.arb檔案"
           }
         }
       }
@@ -541,13 +611,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".jsonファイルを選択してください"
+            "value" : ".json ファイルを選択してください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".json 파일을 선택해 주세요"
+            "value" : ".json 파일을 선택하십시오"
           }
         },
         "zh-Hans" : {
@@ -559,7 +629,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請選擇.json文件"
+            "value" : "請選擇.json檔案"
           }
         }
       }
@@ -576,13 +646,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".stringsまたは.xcstringsファイルを選択してください"
+            "value" : ".strings または .xcstrings ファイルを選択してください"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".strings 또는 .xcstrings 파일을 선택해 주세요"
+            "value" : ".strings 또는 .xcstrings 파일을 선택하십시오"
           }
         },
         "zh-Hans" : {
@@ -594,7 +664,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "請選擇.strings或.xcstrings文件"
+            "value" : "請選擇.strings或.xcstrings檔案"
           }
         }
       }
@@ -611,13 +681,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "しばらくお待ちください、時間がかかる場合があります"
+            "value" : "お待ちください、しばらく時間がかかる場合があります"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "잠시만 기다려 주세요, 시간이 걸릴 수 있습니다"
+            "value" : "잠시 기다려주세요. 시간이 걸릴 수 있습니다"
           }
         },
         "zh-Hans" : {
@@ -652,7 +722,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "초기화"
+            "value" : "재설정"
           }
         },
         "zh-Hans" : {
@@ -681,7 +751,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ローカライズファイルを保存"
+            "value" : "ローカライズファイルの保存"
           }
         },
         "ko" : {
@@ -699,7 +769,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存本地化文件"
+            "value" : "儲存本地化檔案"
           }
         }
       }
@@ -716,7 +786,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存パス:"
+            "value" : "保存パス："
           }
         },
         "ko" : {
@@ -734,7 +804,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存路徑："
+            "value" : "儲存路徑："
           }
         }
       }
@@ -821,13 +891,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ARBファイルのディレクトリを選択"
+            "value" : "ARB ファイルのディレクトリを選択"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ARB 파일을 위한 디렉토리 선택"
+            "value" : "ARB 파일 디렉토리 선택"
           }
         },
         "zh-Hans" : {
@@ -839,7 +909,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇ARB文件的目錄"
+            "value" : "選擇ARB檔案目錄"
           }
         }
       }
@@ -856,13 +926,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "JSONファイルのディレクトリを選択"
+            "value" : "JSON ファイルのディレクトリを選択"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "JSON 파일을 위한 디렉토리 선택"
+            "value" : "JSON 파일 디렉토리 선택"
           }
         },
         "zh-Hans" : {
@@ -874,7 +944,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇JSON文件的目錄"
+            "value" : "選擇JSON檔案目錄"
           }
         }
       }
@@ -897,7 +967,7 @@
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "언어 파일을 위한 디렉토리 선택"
+            "value" : "언어 파일 디렉토리 선택"
           }
         },
         "zh-Hans" : {
@@ -909,7 +979,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇語言文件的目錄"
+            "value" : "選擇語言檔案目錄"
           }
         }
       }
@@ -944,7 +1014,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇輸入文件"
+            "value" : "選擇輸入檔案"
           }
         }
       }
@@ -979,7 +1049,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇本地化文件"
+            "value" : "選擇本地化檔案"
           }
         }
       }
@@ -996,13 +1066,13 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".xcstringsファイルの保存場所を選択"
+            "value" : ".xcstrings ファイルを保存する場所を選択"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : ".xcstrings 파일 저장 위치 선택"
+            "value" : ".xcstrings 파일을 저장할 위치 선택"
           }
         },
         "zh-Hans" : {
@@ -1014,7 +1084,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇保存.xcstrings文件的位置"
+            "value" : "選擇儲存.xcstrings檔案的位置"
           }
         }
       }
@@ -1119,7 +1189,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇保存目錄"
+            "value" : "選擇儲存目錄"
           }
         }
       }
@@ -1136,7 +1206,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターゲット言語を選択"
+            "value" : "対象言語を選択"
           }
         },
         "ko" : {
@@ -1189,7 +1259,7 @@
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "發送"
+            "value" : "送出"
           }
         }
       }
@@ -1206,7 +1276,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Finderで表示"
+            "value" : "Finder で表示"
           }
         },
         "ko" : {
@@ -1218,7 +1288,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在访达中显示"
+            "value" : "在Finder中显示"
           }
         },
         "zh-Hant" : {
@@ -1276,7 +1346,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "変換を開始"
+            "value" : "変換開始"
           }
         },
         "ko" : {
@@ -1311,25 +1381,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すべての言語のARBファイルを正常に生成しました"
+            "value" : "すべての言語の ARB ファイルが正常に生成されました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 언어에 대한 ARB 파일 생성 성공"
+            "value" : "모든 언어에 대한 ARB 파일이 성공적으로 생성되었습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成所有语言的ARB文件"
+            "value" : "成功为所有语言生成ARB文件"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成所有語言的ARB文件"
+            "value" : "成功為所有語言產生ARB檔案"
           }
         }
       }
@@ -1346,25 +1416,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "すべての言語のローカライズファイルを正常に生成しました"
+            "value" : "すべての言語のローカライズファイルが正常に生成されました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "모든 언어에 대한 지역화 파일 생성 성공"
+            "value" : "모든 언어에 대한 지역화 파일이 성공적으로 생성되었습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成所有语言的本地化文件"
+            "value" : "成功为所有语言生成本地化文件"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成所有語言的本地化文件"
+            "value" : "成功為所有語言產生本地化檔案"
           }
         }
       }
@@ -1381,25 +1451,25 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@の翻訳項目を含むローカライズされたJSONファイルを正常に生成しました"
+            "value" : "%@ 個の翻訳アイテムを含むローカライズされた JSON ファイルが正常に生成されました"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@개의 번역 항목을 포함한 지역화 JSON 파일 생성 성공"
+            "value" : "%@개의 번역 항목을 포함하는 지역화된 JSON 파일이 성공적으로 생성되었습니다"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成包含%@个翻译项的本地化JSON文件"
+            "value" : "成功生成包含%@个翻译条目的本地化JSON文件"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "成功生成包含%@翻譯項目的本地化JSON文件"
+            "value" : "成功產生包含%@個翻譯項目的本地化JSON檔案"
           }
         }
       }
@@ -1428,7 +1498,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "繁体中文"
+            "value" : "繁體中文"
           }
         },
         "zh-Hant" : {
@@ -1451,7 +1521,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "翻訳中..."
+            "value" : "翻訳中…"
           }
         },
         "ko" : {
@@ -1463,13 +1533,13 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "翻译中..."
+            "value" : "正在翻译…"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "翻譯中..."
+            "value" : "翻譯中…"
           }
         }
       }
