@@ -11,7 +11,5 @@
 	</dict>
 	<key>NSFileProviderUsageDescription</key>
 	<string>需要访问选择的文件夹来保存本地文件</string>
-	<key>com.apple.security.files.bookmarks.app-scope</key>
-	<true/>
 </dict>
 </plist>
