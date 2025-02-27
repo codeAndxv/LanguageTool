@@ -3,6 +3,7 @@ import AppKit
 import UniformTypeIdentifiers
 
 struct TransferView: View {
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false // 添加暗黑模式存储
     @State private var inputPath = "No file selected"
     @State private var outputPath = "No save location selected"
     @State private var isInputSelected: Bool = false
@@ -450,6 +451,7 @@ struct TransferView: View {
             }
             .frame(minHeight: 500)
             .blur(radius: isLoading ? 3 : 0)
+            .preferredColorScheme(isDarkMode ? .dark : .light) // 根据 isDarkMode 设置颜色方案
             
             // 加载指示器
             if isLoading {

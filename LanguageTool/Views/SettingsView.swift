@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("selectedAIService") private var selectedService: AIServiceType = .deepseek
     @AppStorage("geminiApiKey") private var geminiApiKey: String = ""
     @AppStorage("appLanguage") private var appLanguage: String = "en"  // 默认为英语
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false // 添加暗黑模式存储
     
     // 修改为使用原生语言名称
     private let supportedLanguages = [
@@ -18,6 +19,8 @@ struct SettingsView: View {
     // 添加语言切换通知
     @State private var languageChanged = false
     
+    @Environment(\.colorScheme) var colorScheme // 获取当前颜色方案
+
     var body: some View {
         Form {
             Section(header: Text("API Settings".localized)) {
@@ -55,6 +58,10 @@ struct SettingsView: View {
                 }
             }
             
+            Section(header: Text("Appearance Settings".localized)) { // 添加外观设置部分
+                Toggle("Dark Mode".localized, isOn: $isDarkMode) // 暗黑模式切换
+            }
+            
             Section("Other Settings".localized) {
                 Text("More Settings Under Development...".localized)
                     .foregroundColor(.secondary)
@@ -65,6 +72,7 @@ struct SettingsView: View {
         .frame(width: 400)
         .frame(minHeight: 200)
         .id(languageChanged) // 强制视图刷新
+        .preferredColorScheme(isDarkMode ? .dark : .light) // 根据 isDarkMode 设置颜色方案
     }
 }
 
