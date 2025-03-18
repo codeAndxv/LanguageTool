@@ -491,7 +491,7 @@ struct LanguageToggle: View {
             Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .foregroundColor(isSelected ? .blue : .gray)
             VStack(alignment: .leading) {
-                Text(language.localizedName)
+                Text(language.name)
                     .font(.system(.body, design: .rounded))
                 Text(language.code)
                     .font(.caption)

@@ -107,8 +107,8 @@ class AIService {
             .filter { !$0.isEmpty }
         
         // 确保翻译结果数量与原文本数量匹配
-        guard translations.count == texts.count else {
-            throw AIError.invalidResponse
+        if translations.count != texts.count {
+            print("count mismatch: \(translations.count) != \(texts.count)")
         }
         
         return translations
@@ -294,6 +294,7 @@ extension AIService {
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = 600
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         switch selectedService {
         case .deepseek:

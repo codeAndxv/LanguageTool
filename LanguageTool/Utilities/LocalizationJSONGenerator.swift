@@ -15,12 +15,15 @@ class LocalizationJSONGenerator {
         let languageNames = [
             "en": "English",
             "zh-Hans": "Simplified Chinese",
-            "zh-Hant": "Traditional Chinese",
             "ja": "Japanese",
             "ko": "Korean",
             "es": "Spanish",
             "fr": "French",
-            "de": "German"
+            "de": "German",
+            "it": "Italian",
+            "pt-BR": "Portuguese (Brazilian)",
+            "ru": "Russian",
+            "ar": "Arabic"
         ]
         
         // 为每种语言批量翻译所有键
